@@ -4,8 +4,8 @@
 - [x] lab/ansible/
 - [x] ├── ansible.cfg
 - [x] ├── inventory/
-- [ ] │   ├── hosts.yml
-- [ ] │   └── group_vars/
+- [/] │   ├── hosts.yml
+- [x] │   └── group_vars/
 - [ ] │       ├── all.yml
 - [ ] │       ├── proxmox.yml
 - [ ] │       ├── unraid.yml
