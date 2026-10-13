@@ -26,10 +26,89 @@ lab/ansible/
 │   └── 12-validation.yml
 └── roles/
     ├── common/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     ├── docker/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     ├── proxmox/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md    
+    │
     ├── unraid/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     ├── monitoring/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     ├── security/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     ├── media/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   ├── handlers/
+    │   │   └── main.yml
+    │   ├── defaults/
+    │   │   └── main.yml
+    │   ├── templates/
+    │   ├── files/
+    │   └── README.md
+    │
     └── ai/
+        ├── tasks/
+        │   └── main.yml
+        ├── handlers/
+        │   └── main.yml
+        ├── defaults/
+        │   └── main.yml
+        ├── templates/
+        ├── files/
+        └── README.md
