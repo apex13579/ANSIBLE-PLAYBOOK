@@ -1,1 +1,58 @@
+```yaml
+---
+# SweattLabs - Monitoring Role
+# File: roles/monitoring/tasks/main.yml
+#
+# Purpose:
+#   Validate monitoring configuration before deploying or managing
+#   monitoring services.
+#
+# Scope:
+#   - Validate monitoring enablement.
+#   - Validate the configured application list.
+#   - Report which applications are selected for future deployment.
+#
+# This role does not:
+#   - Install Docker.
+#   - Deploy containers or compose projects.
+#   - Configure Prometheus scrape targets.
+#   - Configure Grafana dashboards or data sources.
+#   - Configure log collection, alerting, or host firewall rules.
+
+- name: Validate monitoring management is enabled
+  ansible.builtin.assert:
+    that:
+      - monitoring_enabled | default(false) | bool
+    fail_msg: >-
+      Monitoring management is disabled.
+      Set monitoring_enabled=true after validating the target host
+      and completing the required monitoring configuration.
+
+- name: Validate monitoring application list
+  ansible.builtin.assert:
+    that:
+      - monitoring_applications is defined
+      - monitoring_applications is sequence
+      - monitoring_applications is not string
+      - monitoring_applications | length > 0
+    fail_msg: >-
+      Define monitoring_applications as a nonempty list in the
+      appropriate inventory variables.
+
+- name: Validate supported monitoring applications
+  ansible.builtin.assert:
+    that:
+      - item in monitoring_supported_applications
+    fail_msg: >-
+      Unsupported monitoring application '{{ item }}'.
+      Review monitoring_supported_applications.
+  loop: "{{ monitoring_applications }}"
+
+- name: Report selected monitoring applications
+  ansible.builtin.debug:
+    msg: >-
+      Monitoring configuration validated for {{ inventory_hostname }}.
+      Selected applications: {{ monitoring_applications | join(', ') }}.
+      No applications have been deployed or modified.
+```
 
