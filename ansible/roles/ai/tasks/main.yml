@@ -1,1 +1,86 @@
+```yaml
+---
+# SweattLabs - AI Role
+# File: roles/ai/tasks/main.yml
+#
+# Purpose:
+#   Validate AI application configuration before deployment.
+#
+# Scope:
+#   - Require explicit opt-in.
+#   - Validate Docker project and data directories.
+#   - Validate available memory requirements.
+#   - Validate the selected application list.
+#
+# This role does not install Docker, download models, or deploy
+# AI application containers.
+
+- name: Validate AI management is enabled
+  ansible.builtin.assert:
+    that:
+      - ai_enabled | default(false) | bool
+    fail_msg: >-
+      AI management is disabled. Enable it only after reviewing
+      the target host and AI application configuration.
+
+- name: Validate AI Docker project directory
+  ansible.builtin.assert:
+    that:
+      - ai_docker_project_dir is defined
+      - ai_docker_project_dir is string
+      - ai_docker_project_dir | length > 0
+      - ai_docker_project_dir is match('^/')
+    fail_msg: >-
+      Define ai_docker_project_dir as an absolute path
+      for AI Docker project files.
+
+- name: Validate AI data directory
+  ansible.builtin.assert:
+    that:
+      - ai_data_dir is defined
+      - ai_data_dir is string
+      - ai_data_dir | length > 0
+      - ai_data_dir is match('^/')
+    fail_msg: >-
+      Define ai_data_dir as an absolute path for AI data
+      and model storage.
+
+- name: Validate minimum memory requirement
+  ansible.builtin.assert:
+    that:
+      - ansible_memtotal_mb is defined
+      - ansible_memtotal_mb | int >= ai_minimum_memory_mb | int
+    fail_msg: >-
+      Host {{ inventory_hostname }} does not meet the configured
+      minimum memory requirement of {{ ai_minimum_memory_mb }} MB.
+
+- name: Validate selected AI applications
+  ansible.builtin.assert:
+    that:
+      - ai_applications is defined
+      - ai_applications is sequence
+      - ai_applications is not string
+      - ai_applications | length > 0
+    fail_msg: >-
+      Define ai_applications as a nonempty list of supported
+      AI applications.
+
+- name: Validate supported AI applications
+  ansible.builtin.assert:
+    that:
+      - item in ai_supported_applications
+    fail_msg: >-
+      Unsupported AI application '{{ item }}'.
+      Review ai_supported_applications.
+  loop: "{{ ai_applications }}"
+
+- name: Report validated AI configuration
+  ansible.builtin.debug:
+    msg: >-
+      AI configuration validated for {{ inventory_hostname }}.
+      Applications: {{ ai_applications | join(', ') }}.
+      Docker project directory: {{ ai_docker_project_dir }}.
+      Data directory: {{ ai_data_dir }}.
+      No models or containers were changed.
+```
 
