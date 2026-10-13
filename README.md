@@ -1,9 +1,9 @@
 # GIT-DB-1-05-ANSIBLE-PLAYLIST
 
 
-- [ ] lab/ansible/
-- [ ] ├── ansible.cfg
-- [ ] ├── inventory/
+- [x] lab/ansible/
+- [x] ├── ansible.cfg
+- [x] ├── inventory/
 - [ ] │   ├── hosts.yml
 - [ ] │   └── group_vars/
 - [ ] │       ├── all.yml
