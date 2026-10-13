@@ -1,1 +1,198 @@
+```yaml
+---
+# SweattLabs - Playbook 12: Final Validation
+#
+# Purpose:
+#   Perform read-only validation of inventory, connectivity,
+#   operating systems, and selected service prerequisites.
+#
+# Scope:
+#   - Validate inventory host definitions.
+#   - Check Ansible connectivity to selected Linux targets.
+#   - Verify essential host facts.
+#   - Report unreachable or unsupported targets.
+#   - Confirm required configuration variables are present.
+#
+# Safety:
+#   - No package installation.
+#   - No configuration changes.
+#   - No service restarts.
+#   - No firewall modifications.
+#   - No guest creation or deletion.
+#
+# Important:
+#   This playbook does not replace application-specific health checks,
+#   backup restoration tests, or network security validation.
+
+- name: Validate inventory configuration
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Confirm inventory contains managed hosts
+      ansible.builtin.assert:
+        that:
+          - groups is defined
+          - groups | length > 0
+        fail_msg: "Ansible inventory contains no groups."
+
+    - name: Report inventory groups and host counts
+      ansible.builtin.debug:
+        msg: >-
+          Group {{ item }} contains
+          {{ groups[item] | length }} host(s).
+      loop: "{{ groups.keys() | list | sort }}"
+
+    - name: Report configured inventory hostnames
+      ansible.builtin.debug:
+        var: groups['all']
+
+- name: Validate Linux host connectivity and facts
+  hosts: linux_bootstrap
+  gather_facts: true
+  become: false
+  ignore_unreachable: true
+
+  tasks:
+    - name: Confirm Ansible can execute a read-only command
+      ansible.builtin.command:
+        argv:
+          - id
+      register: validation_identity
+      changed_when: false
+      ignore_errors: true
+
+    - name: Report command execution result
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Command result: {{ validation_identity.stdout | default('unavailable') }}"
+          - "Command failed: {{ validation_identity.failed | default(true) }}"
+
+    - name: Validate Linux operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution is defined
+          - ansible_distribution_version is defined
+        fail_msg: >-
+          Linux operating system facts are missing or unsupported
+          on {{ inventory_hostname }}.
+
+    - name: Report host validation details
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Distribution: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Architecture: {{ ansible_architecture }}"
+          - "Python: {{ ansible_python_version | default('unknown') }}"
+          - "Memory: {{ ansible_memtotal_mb | default('unknown') }} MB"
+          - "Validation: facts gathered successfully"
+
+- name: Validate Proxmox inventory configuration
+  hosts: proxmox
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Require Proxmox API connection variables
+      ansible.builtin.assert:
+        that:
+          - proxmox_api_host is defined
+          - proxmox_api_user is defined
+          - proxmox_api_token_id is defined
+          - proxmox_api_token_secret is defined
+        fail_msg: >-
+          Proxmox API variables are incomplete. Define them in the
+          appropriate group variables and store the token secret
+          securely using Ansible Vault.
+      no_log: true
+
+    - name: Report Proxmox API configuration presence
+      ansible.builtin.debug:
+        msg: >-
+          Proxmox API variables are defined for {{ inventory_hostname }}.
+          This check does not test API authentication or guest health.
+
+- name: Validate internal application selections
+  hosts: internal_application_hosts
+  gather_facts: false
+
+  tasks:
+    - name: Verify internal application selection exists
+      ansible.builtin.assert:
+        that:
+          - internal_applications_enabled is defined
+          - internal_applications_enabled is sequence
+          - internal_applications_enabled is not string
+        fail_msg: >-
+          Internal application selection is missing or invalid
+          for {{ inventory_hostname }}.
+
+    - name: Report internal application selection
+      ansible.builtin.debug:
+        msg: >-
+          {{ inventory_hostname }}:
+          {{ internal_applications_enabled | join(', ') }}
+
+- name: Validate media configuration
+  hosts: media
+  gather_facts: false
+
+  tasks:
+    - name: Verify media configuration variables
+      ansible.builtin.assert:
+        that:
+          - media_docker_project_dir is defined
+          - media_data_mounts is defined
+          - media_data_mounts is mapping
+        fail_msg: >-
+          Media host configuration is incomplete.
+
+    - name: Report media configuration presence
+      ansible.builtin.debug:
+        msg: >-
+          Media configuration variables are present for
+          {{ inventory_hostname }}. NAS mount status and container health
+          have not been tested by this task.
+
+- name: Validate AI configuration
+  hosts: ai
+  gather_facts: false
+
+  tasks:
+    - name: Verify AI configuration variables
+      ansible.builtin.assert:
+        that:
+          - ai_docker_project_dir is defined
+          - ai_data_dir is defined
+          - ai_applications_enabled is defined
+        fail_msg: "AI host configuration is incomplete."
+
+    - name: Report AI configuration presence
+      ansible.builtin.debug:
+        msg: >-
+          AI configuration variables are present for {{ inventory_hostname }}.
+          Model loading and API health have not been tested.
+
+- name: Validate game server configuration
+  hosts: game_servers
+  gather_facts: false
+
+  tasks:
+    - name: Verify game server configuration variables
+      ansible.builtin.assert:
+        that:
+          - game_servers_enabled is defined
+          - game_server_data_dir is defined
+        fail_msg: "Game server configuration is incomplete."
+
+    - name: Report game server configuration presence
+      ansible.builtin.debug:
+        msg: >-
+          Game server configuration variables are present for
+          {{ inventory_hostname }}. Server processes and game connectivity
+          have not been tested.
+```
 
