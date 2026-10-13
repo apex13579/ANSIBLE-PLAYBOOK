@@ -1,1 +1,111 @@
+```yaml
+---
+# SweattLabs - Playbook 08: Public Services
+#
+# Purpose:
+#   Validate and orchestrate services intended for public access.
+#
+# Planned services:
+#   - Traefik: reverse proxy
+#   - Pangolin: secure remote-access / publishing platform
+#   - Memos: self-hosted notes, if approved for public access
+#
+# Deployment policy:
+#   - Public-facing services run in dedicated, hardened Proxmox LXCs.
+#   - Internal-only applications remain internal unless explicitly approved.
+#   - Docker is reserved for internal services under the SweattLabs design.
+#   - Do not expose Proxmox, Unraid, management interfaces, or databases.
+#   - Do not modify firewall rules or publish ports automatically in this
+#     validation scaffold.
+#
+# Security requirements:
+#   - Use dedicated, unprivileged LXCs where supported.
+#   - Keep application data persistent and backed up.
+#   - Store credentials, API tokens, and private keys in Ansible Vault.
+#   - Require TLS for public web interfaces.
+#   - Restrict administrative interfaces and validate authentication.
+#   - Review firewall/NAT rules before enabling external access.
+#
+# Important:
+#   This playbook validates selections and target configuration only.
+#   It does not create LXCs, install services, configure DNS, or publish ports.
+
+- name: Validate public service selections
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    public_service_catalog:
+      - traefik
+      - pangolin
+      - memos
+
+  tasks:
+    - name: Display planned public services
+      ansible.builtin.debug:
+        msg: >-
+          Public service catalog:
+          {{ public_service_catalog | join(', ') }}
+
+    - name: Require an explicit public service selection
+      ansible.builtin.assert:
+        that:
+          - public_services_enabled is defined
+          - public_services_enabled is sequence
+          - public_services_enabled is not string
+        fail_msg: >-
+          Define public_services_enabled as a list of explicitly approved
+          public services. No service is enabled by default.
+
+    - name: Validate selected public service names
+      ansible.builtin.assert:
+        that:
+          - item in public_service_catalog
+        fail_msg: "Unknown public service: {{ item }}"
+      loop: "{{ public_services_enabled }}"
+
+- name: Validate public service LXC targets
+  hosts: public_service_lxcs
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Verify target is Linux
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+        fail_msg: >-
+          Public service targets must be Linux guests.
+          Do not target the Proxmox host for application deployment.
+
+    - name: Require explicit service assignment
+      ansible.builtin.assert:
+        that:
+          - public_services_enabled is defined
+          - public_services_enabled | length > 0
+        fail_msg: >-
+          Define public_services_enabled for this LXC in inventory
+          before proceeding.
+
+    - name: Validate services assigned to this LXC
+      ansible.builtin.assert:
+        that:
+          - item in public_service_catalog
+        fail_msg: >-
+          Unknown public service {{ item }} assigned to {{ inventory_hostname }}.
+      loop: "{{ public_services_enabled }}"
+
+    - name: Report public service target
+      ansible.builtin.debug:
+        msg:
+          - "Target: {{ inventory_hostname }}"
+          - "Operating system: {{ ansible_distribution | default('unknown') }}"
+          - "Assigned services: {{ public_services_enabled | join(', ') }}"
+          - "Deployment status: validation only; no changes made"
+
+    # Add hardening and service-specific deployment tasks only after
+    # the LXC configuration, service ownership, ports, DNS, TLS, and
+    # authentication requirements have been defined.
+```
 
