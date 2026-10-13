@@ -1,1 +1,152 @@
+```yaml
+---
+# SweattLabs - Playbook 09: Media Services
+#
+# Host:
+#   HP EliteDesk 800 G3 SFF
+#   Debian bare metal
+#
+# Purpose:
+#   Validate and orchestrate the media-server application stack.
+#
+# Applications:
+#   - Jellyfin
+#   - Sonarr
+#   - Radarr
+#   - Lidarr
+#   - Prowlarr
+#   - Bazarr
+#   - qBittorrent
+#   - Usenet client/services
+#
+# Architecture:
+#   - Applications run as Docker containers on the media host.
+#   - Media libraries and download data reside on NAS-backed storage.
+#   - Intel Quick Sync is the planned hardware-transcoding path.
+#   - The OS disk is reserved for Debian, Docker configuration, and logs.
+#
+# Safety:
+#   - Do not delete or recreate existing containers automatically.
+#   - Do not format disks or modify NAS data.
+#   - Do not overwrite existing application configuration.
+#   - Keep credentials in Ansible Vault.
+#   - Do not expose media management interfaces directly to the internet.
+#
+# Status:
+#   This playbook validates configuration only.
+#   Container deployment and service health checks must be implemented
+#   after the media role and host variables are ready.
+
+- name: Validate media stack configuration
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    media_application_catalog:
+      - jellyfin
+      - sonarr
+      - radarr
+      - lidarr
+      - prowlarr
+      - bazarr
+      - qbittorrent
+      - usenet
+
+  tasks:
+    - name: Display media application catalog
+      ansible.builtin.debug:
+        msg: >-
+          Media applications:
+          {{ media_application_catalog | join(', ') }}
+
+    - name: Require explicit media application selection
+      ansible.builtin.assert:
+        that:
+          - media_applications_enabled is defined
+          - media_applications_enabled is sequence
+          - media_applications_enabled is not string
+        fail_msg: >-
+          Define media_applications_enabled as a list of applications
+          to manage. No applications will be deployed implicitly.
+
+    - name: Validate selected media application names
+      ansible.builtin.assert:
+        that:
+          - item in media_application_catalog
+        fail_msg: "Unknown media application: {{ item }}"
+      loop: "{{ media_applications_enabled }}"
+
+- name: Validate media host prerequisites
+  hosts: media
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Verify supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution == "Debian"
+        fail_msg: >-
+          The media host is expected to run Debian Linux.
+          Verify the inventory target before continuing.
+
+    - name: Require explicit media application selection
+      ansible.builtin.assert:
+        that:
+          - media_applications_enabled is defined
+          - media_applications_enabled | length > 0
+        fail_msg: >-
+          Define media_applications_enabled for this media host.
+
+    - name: Verify Docker deployment configuration exists
+      ansible.builtin.assert:
+        that:
+          - media_docker_project_dir is defined
+          - media_docker_project_dir | length > 0
+          - media_data_mounts is defined
+          - media_data_mounts is mapping
+        fail_msg: >-
+          Define media_docker_project_dir and media_data_mounts
+          in inventory/group_vars/media.yml.
+
+    - name: Verify Docker project directory is an absolute path
+      ansible.builtin.assert:
+        that:
+          - media_docker_project_dir is match('^/')
+        fail_msg: "media_docker_project_dir must be an absolute path."
+
+    - name: Verify NAS-backed storage paths are absolute
+      ansible.builtin.assert:
+        that:
+          - item.value is string
+          - item.value is match('^/')
+        fail_msg: >-
+          NAS-backed storage path {{ item.key }} must be an absolute path.
+      loop: "{{ media_data_mounts | dict2items }}"
+
+    - name: Check Intel Quick Sync device visibility
+      ansible.builtin.stat:
+        path: /dev/dri
+      register: media_dri_device
+
+    - name: Report media host readiness
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Selected applications: {{ media_applications_enabled | join(', ') }}"
+          - "Docker project directory: {{ media_docker_project_dir }}"
+          - "NAS mount definitions: {{ media_data_mounts | to_nice_yaml }}"
+          - "Intel graphics device directory exists: {{ media_dri_device.stat.exists | default(false) }}"
+          - "Deployment status: validation only; no changes made"
+
+    # Future implementation:
+    # 1. Verify NAS mounts are mounted and writable before starting containers.
+    # 2. Verify Docker and Docker Compose are installed and running.
+    # 3. Deploy containers through the existing media role.
+    # 4. Pass /dev/dri to Jellyfin only after verifying host device support.
+    # 5. Verify health endpoints and container status.
+```
 
