@@ -1,1 +1,54 @@
+```yaml
+---
+# SweattLabs - Proxmox Role
+# File: roles/proxmox/tasks/main.yml
+#
+# Purpose:
+#   Validate the Proxmox VE host and API configuration before
+#   running Proxmox-specific automation.
+#
+# Scope:
+#   - Validate the target operating system and Proxmox installation.
+#   - Validate required API connection variables when API management
+#     is enabled.
+#
+# This role does not:
+#   - Create, modify, or destroy virtual machines or LXC containers.
+#   - Modify Proxmox networking, storage, or cluster configuration.
+#   - Apply generic Debian host configuration to Proxmox VE.
+#   - Install or configure applications inside guests.
+
+- name: Verify the target is a Linux host
+  ansible.builtin.assert:
+    that:
+      - ansible_system == "Linux"
+    fail_msg: >-
+      Host {{ inventory_hostname }} is not a Linux system.
+      Proxmox VE host automation cannot continue.
+
+- name: Verify Proxmox VE distribution
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_virtualization_type is defined or
+        proxmox_allow_unverified_host | default(false) | bool
+    fail_msg: >-
+      Host {{ inventory_hostname }} has not been verified as a
+      Proxmox VE host. Confirm the host identity before proceeding.
+  when: proxmox_validate_host | default(true) | bool
+
+- name: Validate Proxmox API configuration
+  ansible.builtin.assert:
+    that:
+      - proxmox_api_host is defined
+      - proxmox_api_user is defined
+      - proxmox_api_token_id is defined
+      - proxmox_api_token_secret is defined
+    fail_msg: >-
+      Proxmox API management is enabled, but one or more required
+      API variables are missing. Define them in the appropriate
+      inventory variables and protect the token secret with Ansible Vault.
+  no_log: true
+  when: proxmox_api_enabled | default(false) | bool
+```
 
