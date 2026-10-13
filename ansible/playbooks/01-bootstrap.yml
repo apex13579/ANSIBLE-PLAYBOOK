@@ -1,1 +1,104 @@
+```yaml
+---
+# SweattLabs - Playbook 01: OS Bootstrap
+#
+# Purpose:
+#   Prepare supported Debian/Ubuntu hosts for Ansible management
+#   with minimal manual intervention.
+#
+# Responsibilities:
+#   - Establish and verify SSH connectivity
+#   - Bootstrap Python when missing
+#   - Gather and validate OS facts
+#   - Install baseline system prerequisites
+#   - Verify privilege escalation and host readiness
+#
+# Exclusions:
+#   - Proxmox VE host configuration
+#   - Unraid system configuration
+#   - OPNsense configuration
+#   - VLAN, routing, and firewall changes
+#   - Docker and application deployment
+#
+# Requirements:
+#   - Hosts must already be installed and reachable over SSH.
+#   - Initial credentials must be supplied securely.
+#   - Initial privilege escalation must be available where required.
+#   - Inventory group "linux_bootstrap" must contain only supported
+#     Debian/Ubuntu hosts.
+
+- name: Bootstrap Debian and Ubuntu hosts
+  hosts: linux_bootstrap
+  gather_facts: false
+  become: true
+  serial: 1
+
+  tasks:
+    - name: Verify initial SSH connectivity
+      ansible.builtin.raw: "printf 'SSH connectivity verified\\n'"
+      changed_when: false
+      become: false
+
+    - name: Bootstrap Python 3 when missing
+      ansible.builtin.raw: |
+        if command -v python3 >/dev/null 2>&1; then
+          echo "Python 3 is already installed"
+        elif command -v apt-get >/dev/null 2>&1; then
+          apt-get update &&
+          DEBIAN_FRONTEND=noninteractive apt-get install -y python3
+        else
+          echo "Unsupported package manager: Python bootstrap failed" >&2
+          exit 1
+        fi
+      register: python_bootstrap
+      changed_when: >-
+        'Python 3 is already installed' not in
+        python_bootstrap.stdout
+      when: ansible_python_interpreter is not defined
+
+    - name: Gather system facts
+      ansible.builtin.setup:
+
+    - name: Verify supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution in ["Debian", "Ubuntu"]
+          - ansible_python_version is defined
+        fail_msg: >-
+          This bootstrap playbook supports Debian and Ubuntu hosts
+          with Python 3 available. Use a platform-specific workflow
+          for other operating systems.
+
+    - name: Refresh APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install baseline packages
+      ansible.builtin.apt:
+        name:
+          - python3
+          - sudo
+          - ca-certificates
+          - openssh-client
+        state: present
+
+    - name: Verify sudo is available
+      ansible.builtin.command:
+        argv:
+          - sudo
+          - --version
+      changed_when: false
+      become: false
+
+    - name: Report bootstrap results
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Operating system: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Architecture: {{ ansible_architecture }}"
+          - "Python: {{ ansible_python_version }}"
+          - "Bootstrap completed successfully."
+```
 
