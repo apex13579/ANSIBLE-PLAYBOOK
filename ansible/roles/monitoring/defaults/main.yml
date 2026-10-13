@@ -1,1 +1,22 @@
+```yaml
+---
+# SweattLabs - Monitoring Role Defaults
+# File: roles/monitoring/defaults/main.yml
+
+# Monitoring management
+# Disabled until deployment configuration is implemented and verified.
+monitoring_enabled: false
+
+# Supported monitoring applications
+monitoring_supported_applications:
+  - prometheus
+  - grafana
+  - loki
+  - uptime_kuma
+  - scrutiny
+
+# Applications selected for deployment
+# Override this list in inventory/group_vars when ready.
+monitoring_applications: []
+```
 
