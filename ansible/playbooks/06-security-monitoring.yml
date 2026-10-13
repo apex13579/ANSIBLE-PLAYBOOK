@@ -1,1 +1,110 @@
+```yaml
+---
+# SweattLabs - Playbook 06: Security and Monitoring
+#
+# Purpose:
+#   Deploy and validate security monitoring and observability services.
+#
+# Planned services:
+#   - Wazuh
+#   - Zeek
+#   - CrowdSec
+#   - Prometheus
+#   - Grafana
+#   - Loki
+#   - Uptime Kuma
+#   - Scrutiny
+#
+# Responsibilities:
+#   - Validate deployment selections and target configuration
+#   - Orchestrate service-specific deployment roles
+#   - Validate service health after deployment
+#   - Preserve separation between monitoring, security, and workloads
+#
+# Architecture:
+#   - Internal containerized services run through designated Docker hosts.
+#   - Unraid applications use Unraid's container management.
+#   - Public-facing services outside VPN/Tailscale use hardened LXCs.
+#   - Proxmox host management is separate from guest application management.
+#
+# Safety:
+#   - Do not modify firewall rules or VLAN configuration here.
+#   - Do not change packet-capture interfaces without explicit configuration.
+#   - Do not assume Zeek can observe inter-VLAN traffic without a SPAN/TAP
+#     feed or suitable capture interface.
+#   - Store credentials and tokens in Ansible Vault.
+#   - Avoid destructive changes to existing monitoring data.
+
+- name: Validate security and monitoring selections
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    security_monitoring_services:
+      - wazuh
+      - zeek
+      - crowdsec
+      - prometheus
+      - grafana
+      - loki
+      - uptime_kuma
+      - scrutiny
+
+  tasks:
+    - name: Display planned security and monitoring services
+      ansible.builtin.debug:
+        msg: >-
+          Planned services:
+          {{ security_monitoring_services | join(', ') }}
+
+    - name: Verify deployment selection is defined
+      ansible.builtin.assert:
+        that:
+          - security_monitoring_enabled is defined
+          - security_monitoring_enabled is sequence
+          - security_monitoring_enabled is not string
+        fail_msg: >-
+          Define security_monitoring_enabled as a list of services
+          to deploy. No services will be deployed implicitly.
+
+    - name: Validate selected service names
+      ansible.builtin.assert:
+        that:
+          - item in security_monitoring_services
+        fail_msg: "Unknown security/monitoring service: {{ item }}"
+      loop: "{{ security_monitoring_enabled }}"
+
+- name: Validate security and monitoring deployment targets
+  hosts: security_monitoring_hosts
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Require a service selection for this target
+      ansible.builtin.assert:
+        that:
+          - security_monitoring_enabled is defined
+          - security_monitoring_enabled | length > 0
+        fail_msg: >-
+          Define security_monitoring_enabled for this target
+          before enabling deployment.
+
+    - name: Report selected services for this target
+      ansible.builtin.debug:
+        msg: >-
+          Target {{ inventory_hostname }} has selected services:
+          {{ security_monitoring_enabled | join(', ') }}
+
+    # Add service-specific role calls after target placement,
+    # dependencies, storage, ports, and configuration are confirmed.
+    #
+    # Zeek requires a suitable capture interface or SPAN/TAP feed.
+    # CrowdSec requires a defined log source and remediation strategy.
+    # Wazuh requires agent/server roles and a defined enrollment method.
+    # Prometheus requires explicit scrape targets.
+    # Grafana and Loki require configured data sources and retention.
+    # Uptime Kuma requires explicitly defined health checks.
+    # Scrutiny requires supported device visibility for SMART monitoring.
+```
 
