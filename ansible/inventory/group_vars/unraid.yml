@@ -1,1 +1,30 @@
+```yaml
+---
+# SweattLabs - Unraid Variables
+
+# Host identity
+unraid_hostname: unraid01
+unraid_management_ip: 10.10.30.10
+unraid_domain: sweatt.lab
+
+# Platform
+unraid_platform: unraid
+unraid_hardware: Dell R610
+unraid_role: nas
+
+# Connection
+ansible_connection: ssh
+
+# Storage
+unraid_manage_storage: true
+unraid_manage_shares: true
+unraid_manage_permissions: true
+
+# Applications
+unraid_manage_containers: true
+
+# Security
+unraid_manage_firewall: false
+unraid_validate_ssl: true
+```
 
