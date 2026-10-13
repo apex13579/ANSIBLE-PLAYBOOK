@@ -1,1 +1,35 @@
+```yaml
+---
+# SweattLabs - OPNsense Firewall Variables
+
+# Host identity
+firewall_hostname: opnsense01
+firewall_domain: sweatt.lab
+firewall_management_ip: 10.10.10.1
+
+# Platform and hardware
+firewall_platform: opnsense
+firewall_hardware: Cisco ASA 5512-X
+firewall_role: router_firewall
+
+# Management
+firewall_manage_vlans: true
+firewall_manage_interfaces: true
+firewall_manage_routing: true
+firewall_manage_dhcp: true
+firewall_manage_dns: true
+firewall_manage_rules: true
+firewall_manage_nat: true
+
+# Security
+firewall_manage_admin_access: true
+firewall_manage_certificates: true
+firewall_validate_tls: true
+
+# Validation
+firewall_validate_interfaces: true
+firewall_validate_routing: true
+firewall_validate_dns: true
+firewall_validate_rules: true
+```
 
