@@ -1,1 +1,125 @@
+```yaml
+---
+# SweattLabs - Playbook 11: Game Servers
+#
+# Planned servers:
+#   - Minecraft (PaperMC)
+#   - AzerothCore
+#   - Palworld dedicated server
+#
+# Network:
+#   VLAN 90 - DMZ / Game Servers
+#   Subnet: 10.10.90.0/24
+#   Gateway: 10.10.90.1
+#
+# Architecture:
+#   - Game servers are hosted in dedicated Proxmox guests.
+#   - Publicly accessible game services use isolated, hardened LXCs
+#     where the application and dependencies support that deployment.
+#   - Do not run game workloads directly on the Proxmox host.
+#   - Keep persistent world data, databases, and configuration backed up.
+#   - Publish only required game ports through explicit firewall rules.
+#
+# Security:
+#   - Do not expose SSH, Proxmox management, or database ports publicly.
+#   - Store credentials in Ansible Vault.
+#   - Do not overwrite existing world or character data.
+#   - Verify server-specific requirements before selecting LXC or VM.
+#
+# Status:
+#   This playbook validates selections and inventory configuration only.
+#   It does not provision guests, install game servers, or change firewall
+#   rules.
+
+- name: Validate game server selections
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    game_server_catalog:
+      - minecraft
+      - azerothcore
+      - palworld
+
+  tasks:
+    - name: Display planned game servers
+      ansible.builtin.debug:
+        msg: "Game servers: {{ game_server_catalog | join(', ') }}"
+
+    - name: Require explicit game server selection
+      ansible.builtin.assert:
+        that:
+          - game_servers_enabled is defined
+          - game_servers_enabled is sequence
+          - game_servers_enabled is not string
+        fail_msg: >-
+          Define game_servers_enabled as a list of game servers
+          to manage. No server is enabled by default.
+
+    - name: Validate selected game server names
+      ansible.builtin.assert:
+        that:
+          - item in game_server_catalog
+        fail_msg: "Unknown game server: {{ item }}"
+      loop: "{{ game_servers_enabled }}"
+
+- name: Validate game server guest configuration
+  hosts: game_servers
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Verify target is Linux
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+        fail_msg: >-
+          Game server guests are expected to run Linux.
+          Verify the inventory target before continuing.
+
+    - name: Require explicit game server assignment
+      ansible.builtin.assert:
+        that:
+          - game_servers_enabled is defined
+          - game_servers_enabled | length > 0
+        fail_msg: >-
+          Define game_servers_enabled for this guest in inventory.
+
+    - name: Validate server assignments
+      ansible.builtin.assert:
+        that:
+          - item in game_server_catalog
+        fail_msg: >-
+          Unknown game server {{ item }} assigned to {{ inventory_hostname }}.
+      loop: "{{ game_servers_enabled }}"
+
+    - name: Require persistent data directory
+      ansible.builtin.assert:
+        that:
+          - game_server_data_dir is defined
+          - game_server_data_dir | length > 0
+          - game_server_data_dir is match('^/')
+        fail_msg: >-
+          Define game_server_data_dir as an absolute path for persistent
+          world, configuration, and server data.
+
+    - name: Report game server guest configuration
+      ansible.builtin.debug:
+        msg:
+          - "Guest: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution | default('unknown') }}"
+          - "Assigned servers: {{ game_servers_enabled | join(', ') }}"
+          - "Persistent data directory: {{ game_server_data_dir }}"
+          - "Deployment status: validation only; no changes made"
+
+    # Future implementation:
+    # 1. Provision guests through the existing Proxmox role/playbook.
+    # 2. Confirm VM/LXC suitability for each game's requirements.
+    # 3. Install required runtimes and server dependencies.
+    # 4. Deploy each server with persistent storage and explicit ownership.
+    # 5. Configure backups and test restoration.
+    # 6. Validate server health and listening ports.
+    # 7. Apply narrowly scoped firewall rules only after explicit approval.
+```
 
