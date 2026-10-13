@@ -1,1 +1,53 @@
+```yaml
+---
+# SweattLabs - Docker Role
+# File: roles/docker/tasks/main.yml
+#
+# Purpose:
+#   Install and configure Docker Engine on supported Debian/Ubuntu hosts.
+#
+# Requirements:
+#   - Debian or Ubuntu
+#   - Python 3 and working Ansible connectivity
+#   - Privilege escalation enabled by the calling play
+#   - Docker's official APT repository configured separately
+#
+# Scope:
+#   - Validate the operating system
+#   - Refresh the APT package cache
+#   - Install configured Docker packages
+#   - Enable and start the Docker service
+#
+# This role does not:
+#   - Deploy application containers
+#   - Create Docker networks or volumes
+#   - Configure host firewall rules
+#   - Configure Docker's APT repository or signing key
+
+- name: Verify supported operating system
+  ansible.builtin.assert:
+    that:
+      - ansible_system == "Linux"
+      - ansible_distribution in ["Debian", "Ubuntu"]
+    fail_msg: >-
+      The Docker role supports Debian and Ubuntu only.
+      Host {{ inventory_hostname }} reports
+      {{ ansible_distribution | default('unknown') }}.
+
+- name: Refresh APT package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: "{{ docker_apt_cache_valid_time }}"
+
+- name: Install Docker packages
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+
+- name: Ensure Docker service is enabled and running
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+    state: started
+```
 
