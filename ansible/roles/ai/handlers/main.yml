@@ -1,1 +1,14 @@
+```yaml
+---
+# SweattLabs - AI Role Handlers
+# File: roles/ai/handlers/main.yml
+#
+# Purpose:
+#   Reserved for handlers required by future AI deployment tasks.
+#
+# Add handlers only when a task changes application configuration
+# and a verified restart or reload is required.
+
+# No handlers are currently defined.
+```
 
