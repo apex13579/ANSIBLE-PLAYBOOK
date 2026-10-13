@@ -1,1 +1,30 @@
+```yaml
+---
+# SweattLabs - Proxmox VE Variables
+
+# Host identity
+proxmox_hostname: proxmox01
+proxmox_node_name: proxmox01
+proxmox_management_ip: 10.10.10.10
+proxmox_domain: sweatt.lab
+
+# Platform
+proxmox_platform: pve
+proxmox_hardware: Dell R610
+proxmox_role: hypervisor
+
+# Connection
+ansible_connection: ssh
+
+# Guest management
+proxmox_manage_vms: true
+proxmox_manage_lxc: true
+
+# Storage and backup
+proxmox_manage_storage: true
+proxmox_manage_backups: true
+
+# Security
+proxmox_validate_ssl: true
+```
 
