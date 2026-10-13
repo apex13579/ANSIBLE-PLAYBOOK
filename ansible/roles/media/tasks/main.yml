@@ -1,1 +1,75 @@
+```yaml
+---
+# SweattLabs - Media Role
+# File: roles/media/tasks/main.yml
+#
+# Purpose:
+#   Validate media application configuration before deployment.
+#
+# Scope:
+#   - Require explicit opt-in.
+#   - Validate the Docker project directory.
+#   - Validate the media data mount configuration.
+#   - Validate the selected application list.
+#
+# This role does not install Docker, mount NAS shares, or deploy
+# application containers.
+
+- name: Validate media management is enabled
+  ansible.builtin.assert:
+    that:
+      - media_enabled | default(false) | bool
+    fail_msg: >-
+      Media management is disabled. Enable it only after reviewing
+      the target host and media configuration.
+
+- name: Validate media Docker project directory
+  ansible.builtin.assert:
+    that:
+      - media_docker_project_dir is defined
+      - media_docker_project_dir is string
+      - media_docker_project_dir | length > 0
+      - media_docker_project_dir is match('^/')
+    fail_msg: >-
+      Define media_docker_project_dir as an absolute path
+      for media Docker project files.
+
+- name: Validate media data mount configuration
+  ansible.builtin.assert:
+    that:
+      - media_data_mounts is defined
+      - media_data_mounts is mapping
+      - media_data_mounts | length > 0
+    fail_msg: >-
+      Define media_data_mounts as a nonempty mapping of
+      media data paths and their intended mount locations.
+
+- name: Validate selected media applications
+  ansible.builtin.assert:
+    that:
+      - media_applications is defined
+      - media_applications is sequence
+      - media_applications is not string
+      - media_applications | length > 0
+    fail_msg: >-
+      Define media_applications as a nonempty list of
+      supported media applications.
+
+- name: Validate supported media applications
+  ansible.builtin.assert:
+    that:
+      - item in media_supported_applications
+    fail_msg: >-
+      Unsupported media application '{{ item }}'.
+      Review media_supported_applications.
+  loop: "{{ media_applications }}"
+
+- name: Report validated media configuration
+  ansible.builtin.debug:
+    msg: >-
+      Media configuration validated for {{ inventory_hostname }}.
+      Applications: {{ media_applications | join(', ') }}.
+      Docker project directory: {{ media_docker_project_dir }}.
+      No mounts or containers were changed.
+```
 
