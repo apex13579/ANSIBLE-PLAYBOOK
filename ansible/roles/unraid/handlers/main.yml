@@ -1,1 +1,14 @@
+```yaml
+---
+# SweattLabs - Unraid Role Handlers
+# File: roles/unraid/handlers/main.yml
+#
+# Purpose:
+#   Reserved for handlers required by future Unraid management tasks.
+#
+# Add handlers only after verifying the supported Unraid management
+# method and the operational impact of the requested action.
+
+# No handlers are currently defined.
+```
 
