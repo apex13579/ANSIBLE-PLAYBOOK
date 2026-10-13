@@ -1,1 +1,53 @@
+```yaml
+---
+# SweattLabs - Security Role
+# File: roles/security/tasks/main.yml
+#
+# Purpose:
+#   Validate security configuration before security automation
+#   is implemented.
+#
+# Scope:
+#   - Require explicit opt-in.
+#   - Validate the requested security controls.
+#   - Report selected controls without changing the host.
+#
+# This role does not yet configure firewalls, authentication,
+# intrusion detection, or security monitoring.
+
+- name: Validate security management is enabled
+  ansible.builtin.assert:
+    that:
+      - security_enabled | default(false) | bool
+    fail_msg: >-
+      Security management is disabled. Enable it only after
+      reviewing the target host and configured security controls.
+
+- name: Validate requested security controls
+  ansible.builtin.assert:
+    that:
+      - security_controls is defined
+      - security_controls is sequence
+      - security_controls is not string
+      - security_controls | length > 0
+    fail_msg: >-
+      Define security_controls as a nonempty list of supported
+      security controls.
+
+- name: Validate supported security controls
+  ansible.builtin.assert:
+    that:
+      - item in security_supported_controls
+    fail_msg: >-
+      Unsupported security control '{{ item }}'.
+      Review security_supported_controls.
+  loop: "{{ security_controls }}"
+
+- name: Report validated security controls
+  ansible.builtin.debug:
+    msg: >-
+      Security configuration validated for {{ inventory_hostname }}.
+      Selected controls: {{ security_controls | join(', ') }}.
+      No security settings were changed.
+```
 
