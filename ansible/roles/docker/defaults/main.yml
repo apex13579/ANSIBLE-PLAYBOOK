@@ -1,1 +1,23 @@
+```yaml
+---
+# SweattLabs - Docker Role Defaults
+# File: roles/docker/defaults/main.yml
+
+# Docker packages
+# Prerequisite: the official Docker APT repository must be configured.
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# APT package cache
+docker_apt_cache_valid_time: 3600
+
+# Docker service
+docker_service_name: docker
+docker_service_enabled: true
+docker_service_state: started
+```
 
