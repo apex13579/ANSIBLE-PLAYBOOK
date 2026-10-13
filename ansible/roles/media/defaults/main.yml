@@ -1,1 +1,32 @@
+```yaml
+---
+# SweattLabs - Media Role Defaults
+# File: roles/media/defaults/main.yml
+
+# Media management
+# Disabled until deployment configuration is implemented and tested.
+media_enabled: false
+
+# Docker project directory on the media host
+media_docker_project_dir: /opt/sweattlabs/media
+
+# Media data mounts
+# Replace these examples with verified NAS export paths and mountpoints.
+# These values describe intended mappings; they do not mount shares.
+media_data_mounts: {}
+
+# Supported media applications
+media_supported_applications:
+  - jellyfin
+  - sonarr
+  - radarr
+  - lidarr
+  - prowlarr
+  - bazarr
+  - qbittorrent
+  - usenet
+
+# Applications selected for configuration
+media_applications: []
+```
 
