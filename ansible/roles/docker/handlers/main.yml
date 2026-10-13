@@ -1,1 +1,11 @@
+```yaml
+---
+# SweattLabs - Docker Role Handlers
+# File: roles/docker/handlers/main.yml
+
+- name: Restart Docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+```
 
