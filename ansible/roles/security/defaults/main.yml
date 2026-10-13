@@ -1,1 +1,22 @@
+```yaml
+---
+# SweattLabs - Security Role Defaults
+# File: roles/security/defaults/main.yml
+
+# Security management
+# Disabled until the controls are implemented and tested.
+security_enabled: false
+
+# Supported control identifiers
+security_supported_controls:
+  - ssh_audit
+  - firewall_audit
+  - access_review
+  - security_updates
+  - audit_logging
+
+# Controls selected for validation
+# Override in inventory/group_vars when ready.
+security_controls: []
+```
 
