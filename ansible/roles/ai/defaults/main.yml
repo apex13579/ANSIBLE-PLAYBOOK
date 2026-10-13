@@ -1,1 +1,29 @@
+```yaml
+---
+# SweattLabs - AI Role Defaults
+# File: roles/ai/defaults/main.yml
+
+# AI management
+# Disabled until deployment tasks are implemented and tested.
+ai_enabled: false
+
+# Docker project directory
+ai_docker_project_dir: /opt/sweattlabs/ai
+
+# Model and application data directory
+ai_data_dir: /srv/ai-data
+
+# Minimum host memory required by this role's validation
+# This is a configurable guardrail, not a guarantee that every model fits.
+ai_minimum_memory_mb: 8192
+
+# Supported AI applications
+ai_supported_applications:
+  - llama
+  - gobonet
+  - n8n
+
+# Applications selected for configuration
+ai_applications: []
+```
 
