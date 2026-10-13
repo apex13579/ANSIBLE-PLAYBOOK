@@ -1,1 +1,11 @@
+```yaml
+---
+# SweattLabs - Proxmox Role Handlers
+# File: roles/proxmox/handlers/main.yml
+
+- name: Restart Proxmox management service
+  ansible.builtin.service:
+    name: pvedaemon
+    state: restarted
+```
 
