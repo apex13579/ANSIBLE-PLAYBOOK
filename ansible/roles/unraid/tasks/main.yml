@@ -1,1 +1,45 @@
+```yaml
+---
+# SweattLabs - Unraid Role
+# File: roles/unraid/tasks/main.yml
+#
+# Purpose:
+#   Validate the Unraid host before running Unraid-specific automation.
+#
+# Scope:
+#   - Confirm that the target is reachable.
+#   - Check that the expected Unraid identification variable is defined.
+#   - Require explicit opt-in before any future management tasks run.
+#
+# This role does not:
+#   - Install Debian or Ubuntu packages.
+#   - Configure Unraid networking or storage.
+#   - Install Docker Engine.
+#   - Deploy or modify Unraid containers.
+#   - Modify array, pool, or parity configuration.
+
+- name: Require explicit Unraid management opt-in
+  ansible.builtin.assert:
+    that:
+      - unraid_manage_enabled | default(false) | bool
+    fail_msg: >-
+      Unraid management is disabled by default.
+      Set unraid_manage_enabled=true only after verifying the
+      target host and the intended management method.
+
+- name: Validate expected Unraid host identity
+  ansible.builtin.assert:
+    that:
+      - unraid_hostname is defined
+      - unraid_hostname | string | length > 0
+    fail_msg: >-
+      Define unraid_hostname in the appropriate inventory variables
+      before running the Unraid role.
+
+- name: Display validated Unraid target
+  ansible.builtin.debug:
+    msg: >-
+      Unraid target {{ inventory_hostname }} passed the role's
+      basic variable checks. No Unraid configuration was changed.
+```
 
