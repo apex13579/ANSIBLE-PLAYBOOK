@@ -1,1 +1,14 @@
+```yaml
+---
+# SweattLabs - Security Role Handlers
+# File: roles/security/handlers/main.yml
+#
+# Purpose:
+#   Reserved for handlers required by future security tasks.
+#
+# Define handlers only after verifying the target platform,
+# service name, configuration validation procedure, and impact.
+
+# No handlers are currently defined.
+```
 
