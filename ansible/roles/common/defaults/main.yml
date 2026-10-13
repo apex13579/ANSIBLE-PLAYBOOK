@@ -1,1 +1,27 @@
+```yaml
+---
+# SweattLabs - Common Role Defaults
+# File: roles/common/defaults/main.yml
+
+# Timezone
+host_timezone: America/New_York
+
+# Hostname
+# Leave undefined unless explicitly assigned in inventory.
+# host_hostname: ""
+
+# SSH server management
+# Do not change SSH server state unless explicitly enabled per host.
+host_manage_ssh_server: false
+
+# Baseline APT packages
+common_base_packages:
+  - ca-certificates
+  - curl
+  - sudo
+  - openssh-client
+
+# APT cache
+common_apt_cache_valid_time: 3600
+```
 
