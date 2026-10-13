@@ -1,8 +1,0 @@
----
-galaxy_info:
-  author: SweattLabs
-  description: Common configuration for Linux systems
-  license: MIT
-  min_ansible_version: "2.15"
-
-dependencies: []

@@ -1,9 +1,0 @@
----
-common_packages:
-  - curl
-  - wget
-  - git
-  - unzip
-
-common_supported_os:
-  - Debian
