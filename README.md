@@ -6,7 +6,7 @@
 - [x] ├── inventory/
 - [/] │   ├── hosts.yml
 - [x] │   └── group_vars/
-- [ ] │       ├── all.yml
+- [x] │       ├── all.yml
 - [ ] │       ├── proxmox.yml
 - [ ] │       ├── unraid.yml
 - [ ] │       ├── ai.yml
