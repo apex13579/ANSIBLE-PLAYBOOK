@@ -1,1 +1,14 @@
+```yaml
+---
+# SweattLabs - Monitoring Role Handlers
+# File: roles/monitoring/handlers/main.yml
+#
+# Purpose:
+#   Reserved for handlers required by future monitoring tasks.
+#
+# Add handlers only when a task changes configuration and a
+# restart or reload is required by the relevant service.
+
+# No handlers are currently defined.
+```
 
