@@ -1,1 +1,94 @@
+```yaml
+---
+# SweattLabs - Playbook 04: Proxmox VE
+#
+# Purpose:
+#   Validate Proxmox API access and manage Proxmox guest resources.
+#
+# Responsibilities:
+#   - Verify Proxmox API connectivity
+#   - Gather node and guest inventory
+#   - Validate configured VM and LXC definitions
+#   - Provide a controlled entry point for guest provisioning
+#
+# Exclusions:
+#   - No generic Linux configuration of the Proxmox host
+#   - No automatic deletion or destructive storage operations
+#   - No guest OS configuration or application deployment
+#   - No assumption that every planned service has a finalized VMID
+#
+# Requirements:
+#   - Install the community.proxmox collection on the control node.
+#   - Store API credentials in Ansible Vault.
+#   - Define Proxmox API connection variables in inventory.
+#   - Review guest IDs, storage, templates, and network bridges
+#     before enabling resource creation.
+
+- name: Validate Proxmox API access
+  hosts: proxmox
+  gather_facts: false
+  connection: local
+  become: false
+
+  vars:
+    proxmox_api_validate_certs: true
+
+  tasks:
+    - name: Verify required Proxmox API variables are defined
+      ansible.builtin.assert:
+        that:
+          - proxmox_api_host is defined
+          - proxmox_api_user is defined
+          - proxmox_api_token_id is defined
+          - proxmox_api_token_secret is defined
+        fail_msg: >-
+          Define the Proxmox API host, user, token ID, and token secret.
+          Store the token secret securely with Ansible Vault.
+
+    - name: Retrieve Proxmox node information
+      community.proxmox.proxmox_node_info:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        validate_certs: "{{ proxmox_api_validate_certs }}"
+      register: proxmox_nodes
+
+    - name: Report available Proxmox nodes
+      ansible.builtin.debug:
+        var: proxmox_nodes
+
+- name: Validate and provision explicitly defined Proxmox guests
+  hosts: proxmox
+  gather_facts: false
+  connection: local
+  become: false
+
+  vars:
+    proxmox_api_validate_certs: true
+    proxmox_provision_guests: false
+    proxmox_guest_definitions: []
+
+  tasks:
+    - name: Validate guest definitions before provisioning
+      ansible.builtin.assert:
+        that:
+          - item.vmid is defined
+          - item.name is defined
+          - item.type is defined
+          - item.type in ["qemu", "lxc"]
+        fail_msg: >-
+          Each guest definition must include a VMID, name, and type
+          of qemu or lxc.
+      loop: "{{ proxmox_guest_definitions }}"
+      when: proxmox_provision_guests | bool
+
+    - name: Explain that guest provisioning is disabled by default
+      ansible.builtin.debug:
+        msg: >-
+          Guest provisioning is disabled. Review VMIDs, storage,
+          templates, bridge names, CPU, memory, and disk settings
+          before setting proxmox_provision_guests=true.
+      when: not (proxmox_provision_guests | bool)
+```
 
