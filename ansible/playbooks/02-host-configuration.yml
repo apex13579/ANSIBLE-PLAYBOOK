@@ -1,1 +1,116 @@
+```yaml
+---
+# SweattLabs - Playbook 02: Host Configuration
+#
+# Purpose:
+#   Apply baseline operating-system configuration to supported
+#   Debian and Ubuntu hosts after bootstrap.
+#
+# Responsibilities:
+#   - Configure hostname and timezone
+#   - Install baseline administration and troubleshooting tools
+#   - Ensure the SSH service is enabled and running
+#   - Verify basic host configuration
+#
+# Exclusions:
+#   - Network interface, VLAN, and routing configuration
+#   - Firewall policy configuration
+#   - Docker and application deployment
+#   - Proxmox VE, Unraid, and OPNsense platform configuration
+#
+# Requirements:
+#   - Run 01-bootstrap.yml first.
+#   - Inventory groups must define the intended hostname.
+#   - Hosts must be Debian or Ubuntu systems.
+
+- name: Configure supported Linux hosts
+  hosts: linux_bootstrap
+  gather_facts: true
+  become: true
+  serial: 1
+
+  vars:
+    lab_timezone: America/New_York
+
+    host_base_packages:
+      - bash-completion
+      - ca-certificates
+      - curl
+      - git
+      - htop
+      - jq
+      - less
+      - lsof
+      - rsync
+      - tmux
+      - unzip
+      - vim
+      - wget
+
+  tasks:
+    - name: Verify supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution in ["Debian", "Ubuntu"]
+        fail_msg: >-
+          This playbook supports Debian and Ubuntu only.
+          Use platform-specific playbooks for other systems.
+
+    - name: Verify the intended hostname is defined
+      ansible.builtin.assert:
+        that:
+          - host_hostname is defined
+          - host_hostname | string | length > 0
+        fail_msg: >-
+          Define host_hostname for this host in inventory
+          before running host configuration.
+
+    - name: Configure system hostname
+      ansible.builtin.hostname:
+        name: "{{ host_hostname }}"
+
+    - name: Configure system timezone
+      community.general.timezone:
+        name: "{{ lab_timezone }}"
+
+    - name: Refresh APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install baseline administration tools
+      ansible.builtin.apt:
+        name: "{{ host_base_packages }}"
+        state: present
+
+    - name: Ensure SSH service is enabled and running
+      ansible.builtin.service:
+        name: ssh
+        enabled: true
+        state: started
+
+    - name: Verify the configured hostname
+      ansible.builtin.command:
+        argv:
+          - hostname
+      register: configured_hostname
+      changed_when: false
+
+    - name: Assert hostname matches inventory configuration
+      ansible.builtin.assert:
+        that:
+          - configured_hostname.stdout == host_hostname
+        fail_msg: >-
+          The system hostname does not match host_hostname.
+
+    - name: Report host configuration results
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Hostname: {{ configured_hostname.stdout }}"
+          - "Timezone: {{ lab_timezone }}"
+          - "Operating system: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Host configuration completed."
+```
 
