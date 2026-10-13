@@ -6,12 +6,12 @@
 - [x] ├── inventory/
 - [/] │   ├── hosts.yml
 - [x] │   └── group_vars/
-- [x] │       ├── all.yml
-- [ ] │       ├── proxmox.yml
-- [ ] │       ├── unraid.yml
-- [ ] │       ├── ai.yml
-- [ ] │       └── media.yml
-- [ ] │       └── firewall.yml
+- [/] │       ├── all.yml
+- [/] │       ├── proxmox.yml
+- [/] │       ├── unraid.yml
+- [/] │       ├── ai.yml
+- [/] │       └── media.yml
+- [/] │       └── firewall.yml
 - [ ] ├── playbooks/
 - [ ] │   ├── 01-bootstrap.yml
 - [ ] │   ├── 02-host-configuration.yml
