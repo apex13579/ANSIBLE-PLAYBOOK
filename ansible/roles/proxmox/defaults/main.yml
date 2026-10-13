@@ -1,1 +1,24 @@
+```yaml
+---
+# SweattLabs - Proxmox Role Defaults
+# File: roles/proxmox/defaults/main.yml
+
+# Host validation
+proxmox_validate_host: true
+
+# Set true only when host verification has been deliberately bypassed.
+# Keep false during normal operation.
+proxmox_allow_unverified_host: false
+
+# Proxmox API management
+# Disabled until API connectivity and credentials are configured.
+proxmox_api_enabled: false
+
+# Define these in inventory or encrypted Ansible Vault variables.
+# Do not store API secrets in plaintext.
+# proxmox_api_host: "10.10.10.10"
+# proxmox_api_user: "ansible@pve"
+# proxmox_api_token_id: "automation"
+# proxmox_api_token_secret: "{{ vault_proxmox_api_token_secret }}"
+```
 
