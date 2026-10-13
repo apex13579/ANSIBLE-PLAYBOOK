@@ -1,1 +1,137 @@
+```yaml
+---
+# SweattLabs - Playbook 03: Network Validation
+#
+# Purpose:
+#   Validate addressing, DNS resolution, default routing, and
+#   reachability before deploying infrastructure and applications.
+#
+# Responsibilities:
+#   - Gather network facts from supported Linux hosts
+#   - Verify configured management addresses when defined
+#   - Check default-route availability
+#   - Validate DNS resolution for the lab domain
+#   - Test reachability to explicitly configured endpoints
+#
+# Exclusions:
+#   - No interface, VLAN, route, DNS, DHCP, or firewall changes
+#   - No generic Linux commands against Unraid or OPNsense
+#   - No assumption that every service IP is a separate host
+#
+# Requirements:
+#   - Run 01-bootstrap.yml first on Linux targets.
+#   - Define network validation variables in inventory/group_vars.
+#   - Run platform-specific validation for Proxmox and OPNsense.
+
+- name: Validate network configuration on supported Linux hosts
+  hosts: linux_bootstrap
+  gather_facts: true
+  become: false
+  serial: 1
+
+  vars:
+    network_validation_domain: "{{ lab_domain | default('sweatt.lab') }}"
+    network_require_default_route: true
+    network_dns_servers: []
+    network_reachable_endpoints: []
+
+  tasks:
+    - name: Verify supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution in ["Debian", "Ubuntu"]
+        fail_msg: >-
+          This playbook's Linux checks support Debian and Ubuntu only.
+
+    - name: Report detected network interfaces and addresses
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Default IPv4 addresses: {{ ansible_facts.all_ipv4_addresses | default([]) }}"
+          - "Interfaces: {{ ansible_facts.interfaces | default([]) }}"
+
+    - name: Verify expected management IP is assigned when configured
+      ansible.builtin.assert:
+        that:
+          - host_management_ip in ansible_facts.all_ipv4_addresses
+        fail_msg: >-
+          Expected management IP {{ host_management_ip }} is not
+          assigned to this host.
+      when:
+        - host_management_ip is defined
+        - host_management_ip | length > 0
+
+    - name: Inspect IPv4 routing table
+      ansible.builtin.command:
+        argv:
+          - ip
+          - -4
+          - route
+          - show
+      register: ipv4_routes
+      changed_when: false
+
+    - name: Verify a default IPv4 route exists
+      ansible.builtin.assert:
+        that:
+          - "'default' in ipv4_routes.stdout"
+        fail_msg: "No default IPv4 route was detected."
+      when: network_require_default_route | bool
+
+    - name: Check DNS resolution for the lab domain
+      ansible.builtin.command:
+        argv:
+          - getent
+          - ahosts
+          - "{{ network_validation_domain }}"
+      register: lab_domain_resolution
+      changed_when: false
+      failed_when: false
+
+    - name: Report lab-domain DNS resolution
+      ansible.builtin.debug:
+        msg: >-
+          DNS lookup for {{ network_validation_domain }}:
+          {{ 'resolved' if lab_domain_resolution.rc == 0 else 'not resolved' }}
+
+    - name: Check explicitly configured DNS servers
+      ansible.builtin.command:
+        argv:
+          - ping
+          - -n
+          - -c
+          - "1"
+          - -W
+          - "2"
+          - "{{ item }}"
+      loop: "{{ network_dns_servers }}"
+      register: dns_server_reachability
+      changed_when: false
+      failed_when: false
+
+    - name: Check explicitly configured network endpoints
+      ansible.builtin.command:
+        argv:
+          - ping
+          - -n
+          - -c
+          - "1"
+          - -W
+          - "2"
+          - "{{ item }}"
+      loop: "{{ network_reachable_endpoints }}"
+      register: endpoint_reachability
+      changed_when: false
+      failed_when: false
+
+    - name: Report network validation summary
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Default route: {{ 'present' if 'default' in ipv4_routes.stdout else 'missing' }}"
+          - "Lab domain resolved: {{ lab_domain_resolution.rc == 0 }}"
+          - "DNS servers checked: {{ network_dns_servers | length }}"
+          - "Additional endpoints checked: {{ network_reachable_endpoints | length }}"
+```
 
