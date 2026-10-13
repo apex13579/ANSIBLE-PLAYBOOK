@@ -1,1 +1,43 @@
+```yaml
+---
+# SweattLabs - Media Host Variables
+
+# Host identity
+media_hostname: media01
+media_management_ip: 10.10.20.30
+media_domain: sweatt.lab
+
+# Platform
+media_platform: debian
+media_hardware: HP EliteDesk 800 G3 SFF
+media_role: media_server
+
+# Connection
+ansible_connection: ssh
+ansible_python_interpreter: auto_silent
+
+# Compute and transcoding
+media_cpu_cores: 4
+media_memory_gb: 8
+media_use_intel_quicksync: true
+
+# Storage
+media_os_disk_gb: 32
+media_use_nas_storage: true
+
+# Applications
+media_manage_docker: true
+media_manage_jellyfin: true
+media_manage_sonarr: true
+media_manage_radarr: true
+media_manage_lidarr: true
+media_manage_prowlarr: true
+media_manage_bazarr: true
+media_manage_qbittorrent: true
+media_manage_usenet: true
+
+# Security
+media_manage_firewall: true
+media_validate_tls: true
+```
 
