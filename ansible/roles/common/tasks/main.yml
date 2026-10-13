@@ -1,1 +1,76 @@
+```yaml
+---
+# SweattLabs - Common Role
+# File: roles/common/tasks/main.yml
+#
+# Purpose:
+#   Apply baseline configuration to supported Debian/Ubuntu hosts.
+#
+# Responsibilities:
+#   - Validate the target operating system.
+#   - Configure the system hostname when explicitly defined.
+#   - Configure the timezone when explicitly defined.
+#   - Install approved baseline packages.
+#   - Ensure the OpenSSH service is enabled and running.
+#
+# Requirements:
+#   - The target must already be reachable through Ansible.
+#   - Python 3 must be available on the target.
+#   - Privilege escalation must be enabled by the calling play.
+#
+# This role does not:
+#   - Configure network interfaces or VLANs.
+#   - Manage firewall rules.
+#   - Install Docker.
+#   - Modify SSH authentication policies.
+#   - Manage application-specific packages.
+
+- name: Verify supported operating system
+  ansible.builtin.assert:
+    that:
+      - ansible_system == "Linux"
+      - ansible_distribution in ["Debian", "Ubuntu"]
+    fail_msg: >-
+      The common role supports Debian and Ubuntu only.
+      Host {{ inventory_hostname }} reports
+      {{ ansible_distribution | default('unknown') }}.
+
+- name: Validate hostname variable when provided
+  ansible.builtin.assert:
+    that:
+      - host_hostname is string
+      - host_hostname | length > 0
+  when: host_hostname is defined
+
+- name: Configure system hostname
+  ansible.builtin.hostname:
+    name: "{{ host_hostname }}"
+  when: host_hostname is defined
+
+- name: Configure system timezone when provided
+  community.general.timezone:
+    name: "{{ host_timezone }}"
+  when: host_timezone is defined
+
+- name: Refresh APT package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install baseline packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - sudo
+      - openssh-client
+    state: present
+
+- name: Ensure OpenSSH server is enabled and running
+  ansible.builtin.service:
+    name: ssh
+    enabled: true
+    state: started
+  when: host_manage_ssh_server | default(false) | bool
+```
 
