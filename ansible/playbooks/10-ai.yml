@@ -1,1 +1,140 @@
+```yaml
+---
+# SweattLabs - Playbook 10: AI Services
+#
+# Host:
+#   Dell OptiPlex 3040 MT
+#   Debian bare metal
+#
+# Applications:
+#   - Llama inference service (CPU-only)
+#   - GoboNet
+#   - n8n
+#
+# Planned resource allocations:
+#   - Llama: 8-16 GB RAM; approximately 100 GB storage
+#   - GoboNet: 2 vCPU, 2 GB RAM, 16 GB storage
+#   - n8n: allocation to be determined
+#
+# Architecture:
+#   - Run applications as Docker containers on the AI host.
+#   - Keep model files and application data on persistent storage.
+#   - Keep secrets in Ansible Vault.
+#   - Permit API access only from explicitly authorized networks.
+#   - Integrate the Llama API with code-server/Continue only after
+#     authentication and network access have been configured.
+#
+# Safety:
+#   - Do not download models or overwrite data automatically.
+#   - Do not expose inference APIs or automation interfaces publicly
+#     by default.
+#   - Do not assume all host CPU cores should be allocated to every
+#     container simultaneously.
+#
+# Status:
+#   This playbook validates configuration only.
+#   Deployment tasks belong in the existing ai and docker roles.
+
+- name: Validate AI application selections
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ai_application_catalog:
+      - llama
+      - gobonet
+      - n8n
+
+  tasks:
+    - name: Display AI application catalog
+      ansible.builtin.debug:
+        msg: "AI applications: {{ ai_application_catalog | join(', ') }}"
+
+    - name: Require explicit AI application selection
+      ansible.builtin.assert:
+        that:
+          - ai_applications_enabled is defined
+          - ai_applications_enabled is sequence
+          - ai_applications_enabled is not string
+        fail_msg: >-
+          Define ai_applications_enabled as a list of applications
+          to manage. No applications will be deployed implicitly.
+
+    - name: Validate selected AI application names
+      ansible.builtin.assert:
+        that:
+          - item in ai_application_catalog
+        fail_msg: "Unknown AI application: {{ item }}"
+      loop: "{{ ai_applications_enabled }}"
+
+- name: Validate AI host prerequisites
+  hosts: ai
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Verify supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_system == "Linux"
+          - ansible_distribution == "Debian"
+        fail_msg: >-
+          The AI host is expected to run Debian Linux.
+          Verify the inventory target before continuing.
+
+    - name: Require explicit AI application selection
+      ansible.builtin.assert:
+        that:
+          - ai_applications_enabled is defined
+          - ai_applications_enabled | length > 0
+        fail_msg: "Define ai_applications_enabled for the AI host."
+
+    - name: Verify AI Docker configuration exists
+      ansible.builtin.assert:
+        that:
+          - ai_docker_project_dir is defined
+          - ai_docker_project_dir | length > 0
+          - ai_data_dir is defined
+          - ai_data_dir | length > 0
+        fail_msg: >-
+          Define ai_docker_project_dir and ai_data_dir in
+          inventory/group_vars/ai.yml.
+
+    - name: Verify AI paths are absolute
+      ansible.builtin.assert:
+        that:
+          - ai_docker_project_dir is match('^/')
+          - ai_data_dir is match('^/')
+        fail_msg: "AI data and Docker project paths must be absolute."
+
+    - name: Check available memory
+      ansible.builtin.assert:
+        that:
+          - ansible_memtotal_mb is defined
+          - ansible_memtotal_mb | int >= 8192
+        fail_msg: >-
+          The host reports less than 8 GB RAM. Review the available
+          memory and planned model size before deploying inference.
+
+    - name: Report AI host readiness
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "CPU cores reported by Ansible: {{ ansible_processor_vcpus | default('unknown') }}"
+          - "Memory: {{ ansible_memtotal_mb }} MB"
+          - "Selected applications: {{ ai_applications_enabled | join(', ') }}"
+          - "Docker project directory: {{ ai_docker_project_dir }}"
+          - "Persistent AI data directory: {{ ai_data_dir }}"
+          - "Deployment status: validation only; no changes made"
+
+    # Future implementation:
+    # 1. Verify Docker and Docker Compose are installed and running.
+    # 2. Create application directories with explicit ownership and permissions.
+    # 3. Deploy Llama with a selected model and bounded CPU/memory settings.
+    # 4. Deploy GoboNet using its confirmed image and configuration.
+    # 5. Deploy n8n with persistent storage and secure credential handling.
+    # 6. Configure internal API access and application health checks.
+```
 
