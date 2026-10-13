@@ -1,1 +1,23 @@
+```yaml
+---
+# SweattLabs - Unraid Role Defaults
+# File: roles/unraid/defaults/main.yml
+
+# Unraid management
+# Keep disabled until the management method is verified.
+unraid_manage_enabled: false
+
+# Host identity
+# Define the actual hostname in inventory/group_vars or host_vars.
+# unraid_hostname: ""
+
+# Container management
+# Unraid applications must be managed through Unraid's supported
+# container-management environment, not by installing Docker Engine.
+unraid_manage_containers: false
+
+# Storage management
+# Keep storage and array changes opt-in and separately validated.
+unraid_manage_storage: false
+```
 
