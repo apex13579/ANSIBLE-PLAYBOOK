@@ -1,1 +1,106 @@
+```yaml
+---
+# SweattLabs - Playbook 07: Internal Applications
+#
+# Purpose:
+#   Deploy and validate applications intended for internal access.
+#
+# Planned applications:
+#   - Vaultwarden
+#   - Nextcloud
+#   - Immich
+#   - Paperless-ngx
+#   - code-server
+#   - SearXNG
+#   - Memos
+#   - LubeLogger
+#   - MuckScraper
+#
+# Deployment boundaries:
+#   - Unraid applications use Unraid's container-management mechanisms.
+#   - Internal Docker applications use designated Docker hosts or VMs.
+#   - Public-facing services outside VPN/Tailscale belong in hardened LXCs
+#     and are managed through 08-public-services.yml.
+#   - Proxmox host OS configuration is not performed here.
+#
+# Safety:
+#   - Do not overwrite application data or existing databases.
+#   - Do not expose internal applications publicly by default.
+#   - Store application credentials and tokens in Ansible Vault.
+#   - Use persistent storage and explicit backup policies.
+#
+# Requirements:
+#   - Define internal_application_hosts in inventory.
+#   - Define internal_applications_enabled for each target.
+#   - Implement deployment and validation in the appropriate roles.
+
+- name: Validate internal application selections
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    internal_application_catalog:
+      - vaultwarden
+      - nextcloud
+      - immich
+      - paperless_ngx
+      - code_server
+      - searxng
+      - memos
+      - lubelogger
+      - muck scraper
+
+  tasks:
+    - name: Display planned internal applications
+      ansible.builtin.debug:
+        msg: >-
+          Internal application catalog:
+          {{ internal_application_catalog | join(', ') }}
+
+    - name: Verify application selection is defined
+      ansible.builtin.assert:
+        that:
+          - internal_applications_enabled is defined
+          - internal_applications_enabled is sequence
+          - internal_applications_enabled is not string
+        fail_msg: >-
+          Define internal_applications_enabled as a list of applications
+          to deploy. No applications will be deployed implicitly.
+
+    - name: Validate selected application names
+      ansible.builtin.assert:
+        that:
+          - item in internal_application_catalog
+        fail_msg: "Unknown internal application: {{ item }}"
+      loop: "{{ internal_applications_enabled }}"
+
+- name: Validate internal application deployment targets
+  hosts: internal_application_hosts
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Require an application selection for this target
+      ansible.builtin.assert:
+        that:
+          - internal_applications_enabled is defined
+          - internal_applications_enabled | length > 0
+        fail_msg: >-
+          Define internal_applications_enabled for this target
+          before enabling deployment.
+
+    - name: Report selected internal applications
+      ansible.builtin.debug:
+        msg: >-
+          Target {{ inventory_hostname }} has selected applications:
+          {{ internal_applications_enabled | join(', ') }}
+
+    # Add platform-specific role calls after each application's
+    # target host, storage, ports, dependencies, and secrets are defined.
+    #
+    # Unraid applications must use Unraid-compatible management.
+    # Docker applications must use the designated Docker host.
+    # Public-facing applications must be handled by 08-public-services.yml.
+```
 
