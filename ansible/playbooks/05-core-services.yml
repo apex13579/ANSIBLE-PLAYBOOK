@@ -1,1 +1,86 @@
+```yaml
+---
+# SweattLabs - Playbook 05: Core Services
+#
+# Purpose:
+#   Deploy and validate foundational internal infrastructure services.
+#
+# Responsibilities:
+#   - Validate core-service deployment targets
+#   - Deploy services through their designated management platforms
+#   - Validate service availability after deployment
+#
+# Planned services:
+#   - Pi-hole
+#   - Unbound
+#   - LLDAP
+#   - Step-CA
+#   - NUT
+#   - Proxmox Backup Server
+#
+# Architecture:
+#   - Internal containerized services use Docker on designated hosts.
+#   - Unraid-managed applications use Unraid's container management.
+#   - Proxmox Backup Server runs in its dedicated VM.
+#   - Proxmox VM/LXC provisioning belongs to 04-proxmox.yml.
+#
+# Safety:
+#   - Do not change firewall or VLAN configuration here.
+#   - Do not deploy applications directly onto the Proxmox host.
+#   - Do not overwrite existing service data without explicit approval.
+#   - Secrets must be stored in Ansible Vault.
+
+- name: Validate core-service deployment configuration
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    core_services:
+      - pihole
+      - unbound
+      - lldap
+      - step_ca
+      - nut
+      - proxmox_backup_server
+
+  tasks:
+    - name: Display planned core services
+      ansible.builtin.debug:
+        msg: "Planned core services: {{ core_services | join(', ') }}"
+
+    - name: Verify core-service deployment mode is defined
+      ansible.builtin.assert:
+        that:
+          - core_service_deployment_mode is defined
+        fail_msg: >-
+          Define core_service_deployment_mode after confirming
+          the deployment targets and management methods.
+
+- name: Deploy core services through their designated roles
+  hosts: core_service_hosts
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Require an explicit service deployment selection
+      ansible.builtin.assert:
+        that:
+          - core_services_enabled is defined
+          - core_services_enabled | length > 0
+        fail_msg: >-
+          Define core_services_enabled for this deployment target.
+          No services will be deployed implicitly.
+
+    - name: Report selected core services
+      ansible.builtin.debug:
+        msg: >-
+          Selected services for {{ inventory_hostname }}:
+          {{ core_services_enabled | join(', ') }}
+
+    # Add service-specific role imports after confirming the
+    # deployment method and target for each core service.
+    # Do not run container roles against Proxmox Backup Server
+    # or directly against the Proxmox hypervisor.
+```
 
