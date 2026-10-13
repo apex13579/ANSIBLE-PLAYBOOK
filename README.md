@@ -37,79 +37,79 @@
     - [/] │   ├── files/
     - [x] │   └── README.md
           │
-    - [ ] ├── docker/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md
+    - [x] ├── docker/
+    - [x] │   ├── tasks/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [/] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md
           │
-    - [ ] ├── proxmox/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md    
+    - [x] ├── proxmox/
+    - [x] │   ├── tasks/
+    - [x] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [x] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [x] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md    
           │
-    - [ ] ├── unraid/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md
+    - [x] ├── unraid/
+    - [x] │   ├── tasks/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [/] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md
           │
-    - [ ] ├── monitoring/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md
+    - [x] ├── monitoring/
+    - [x] │   ├── tasks/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [/] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md
           │
-    - [ ] ├── security/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md
+    - [x] ├── security/
+    - [x] │   ├── tasks/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [/] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md
           │
-    - [ ] ├── media/
-    - [ ] │   ├── tasks/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── handlers/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── defaults/
-    - [ ] │   │   └── main.yml
-    - [ ] │   ├── templates/
-    - [ ] │   ├── files/
-    - [ ] │   └── README.md
+    - [x] ├── media/
+    - [x] │   ├── tasks/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── handlers/
+    - [/] │   │   └── main.yml
+    - [x] │   ├── defaults/
+    - [/] │   │   └── main.yml
+    - [/] │   ├── templates/
+    - [/] │   ├── files/
+    - [x] │   └── README.md
           │
-    - [ ] └── ai/
-        - [ ] ├── tasks/
-        - [ ] │   └── main.yml
-        - [ ] ├── handlers/
-        - [ ] │   └── main.yml
-        - [ ] ├── defaults/
-        - [ ] │   └── main.yml
-        - [ ] ├── templates/
-        - [ ] ├── files/
-        - [ ] └── README.md
+    - [x] └── ai/
+        - [x] ├── tasks/
+        - [/] │   └── main.yml
+        - [x] ├── handlers/
+        - [/] │   └── main.yml
+        - [x] ├── defaults/
+        - [/] │   └── main.yml
+        - [/] ├── templates/
+        - [/] ├── files/
+        - [x] └── README.md
