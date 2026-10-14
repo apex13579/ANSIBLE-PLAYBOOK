@@ -2,22 +2,23 @@
 
 ## Goal
 
-Maintain the homelab's desired state — Proxmox hosts, Unraid, service VMs,
-Docker workloads, monitoring, and supporting services — as reproducible
-Ansible playbooks stored in GitHub. The Cisco switch and OPNsense firewall
-are configured manually per their own plans and are documented here as
-external dependencies.
+Maintain the homelab's desired state as reproducible Ansible playbooks
+stored in GitHub. This includes the Cisco switch, the OPNsense firewall,
+Proxmox hosts, Unraid, service VMs, Docker workloads, monitoring, and
+supporting services. Everything that can be automated, should be.
 
 ## Scope
 
 | In scope (Ansible) | Out of scope (manual) |
 |---|---|
-| Proxmox VE hosts | Cisco switch configuration |
-| Unraid server | OPNsense firewall rules |
-| Docker hosts and containers | Physical cabling |
-| Monitoring stack | VLAN trunk design |
-| Internal and public services | Hardware upgrades |
-| Media, AI, and game server VMs | BIOS / firmware updates |
+| Cisco switch configuration | Physical cabling |
+| OPNsense firewall rules | Hardware upgrades |
+| Proxmox VE hosts | BIOS / firmware updates |
+| Unraid server | Initial console access setup |
+| Docker hosts and containers | |
+| Monitoring stack | |
+| Internal and public services | |
+| Media, AI, and game server VMs | |
 
 ## Repository Layout
 
@@ -37,37 +38,38 @@ lab/ansible/
 │       ├── unraid.yml
 │       ├── ai.yml
 │       ├── media.yml
-│       └── firewall.yml
+│       ├── firewall.yml
+│       └── switch.yml
 ├── host_vars/
 ├── playbooks/
 │   ├── 01-bootstrap.yml
 │   ├── 02-host-configuration.yml
 │   ├── 03-network-validation.yml
-│   ├── 04-proxmox.yml
-│   ├── 05-core-services.yml
-│   ├── 06-security-monitoring.yml
-│   ├── 07-internal-applications.yml
-│   ├── 08-public-services.yml
-│   ├── 09-media.yml
-│   ├── 10-ai.yml
-│   ├── 11-game-servers.yml
-│   └── 12-validation.yml
+│   ├── 04-switch.yml
+│   ├── 05-firewall.yml
+│   ├── 06-proxmox.yml
+│   ├── 07-core-services.yml
+│   ├── 08-security-monitoring.yml
+│   ├── 09-internal-applications.yml
+│   ├── 10-public-services.yml
+│   ├── 11-media.yml
+│   ├── 12-ai.yml
+│   ├── 13-game-servers.yml
+│   └── 14-validation.yml
 └── roles/
     ├── common/
     ├── docker/
+    ├── switch/
+    ├── firewall/
     ├── proxmox/
     ├── unraid/
     ├── monitoring/
     ├── security/
     ├── media/
-    ├── ai/
-    └── firewall/
+    └── ai/
 ```
 
 ## Build Progress
-
-Track overall progress at a glance. Detailed checklists are in each task
-section below.
 
 | Area | Status |
 |---|---|
@@ -76,7 +78,9 @@ section below.
 | Collections and requirements | Not started |
 | Inventory and group vars | Not started |
 | Vault and secrets | Not started |
-| Roles | Not started |
+| Switch role | Not started |
+| Firewall role | Not started |
+| Server roles | Not started |
 | Playbooks | Not started |
 | Validation | Not started |
 
@@ -136,21 +140,33 @@ understood by anyone (including future-me) without reading every file.
 
 ## Goal
 
-Pin the Ansible collections and roles the repo depends on so builds are
+Pin the Ansible collections the repo depends on so builds are
 reproducible across machines and over time.
+
+## Required Collections
+
+| Collection | Version | Purpose |
+|---|---|---|
+| `cisco.ios` | 5.x or newer | Cisco Catalyst switch configuration [citation:1] |
+| `ansibleguy.opnsense` | latest | OPNsense firewall automation [citation:12] |
+| `community.proxmox` | latest | Proxmox VE automation |
+| `community.docker` | latest | Docker container management |
+| `community.general` | latest | General-purpose modules |
+
+**Note:** `cisco.asa` is only needed if you keep the ASA running Cisco software before the OPNsense conversion. Once converted, the ASA is just hardware running OPNsense, and the `cisco.asa` collection is no longer relevant.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `requirements.yml` | Declares collections and roles with versions |
+| `requirements.yml` | Declares collections with versions |
 | `ansible.cfg` | Configures collection paths and defaults |
 
 ## Checklist
 
 - [ ] Create `requirements.yml`.
-- [ ] Pin collection versions (e.g. `community.general: ">=8.0.0,<9.0.0"`).
-- [ ] Include `ansibleguy.opnsense` if firewall automation is in scope.
+- [ ] Pin `cisco.ios` to a known-good version.
+- [ ] Pin `ansibleguy.opnsense` to a known-good version.
 - [ ] Include `community.proxmox` for Proxmox automation.
 - [ ] Include `community.docker` for container management.
 - [ ] Configure `ansible.cfg` with `collections_path` and defaults.
@@ -170,20 +186,40 @@ Define which hosts Ansible manages and what variables apply to each group.
 |---|---|
 | `inventory/hosts.yml` | Host and group definitions |
 | `inventory/group_vars/all.yml` | Variables that apply to every host |
+| `inventory/group_vars/switch.yml` | Cisco switch connection and VLAN vars |
+| `inventory/group_vars/firewall.yml` | OPNsense API and VLAN vars |
 | `inventory/group_vars/proxmox.yml` | Proxmox-specific variables |
 | `inventory/group_vars/unraid.yml` | Unraid-specific variables |
 | `inventory/group_vars/ai.yml` | AI workload variables |
 | `inventory/group_vars/media.yml` | Media service variables |
-| `inventory/group_vars/firewall.yml` | OPNsense-related variables |
 | `host_vars/<host>.yml` | Per-host overrides (IPs, storage paths) |
+
+## VLAN Plan (shared across switch and firewall)
+
+| VLAN ID | Name | Subnet | Gateway |
+|---:|---|---|---|
+| 10 | MGMT | `10.10.10.0/24` | `10.10.10.1` |
+| 15 | IOT | `10.10.15.0/24` | `10.10.15.1` |
+| 20 | SERVICES | `10.10.20.0/24` | `10.10.20.1` |
+| 25 | STORAGE | `10.10.25.0/24` | `10.10.25.1` |
+| 30 | SECURITY | `10.10.30.0/24` | `10.10.30.1` |
+| 35 | AI | `10.10.35.0/24` | `10.10.35.1` |
+| 40 | MEDIA | `10.10.40.0/24` | `10.10.40.1` |
+| 45 | GUEST | `10.10.45.0/24` | `10.10.45.1` |
+| 50 | PUBLIC | `10.10.50.0/24` | `10.10.50.1` |
+| 90 | TARPIT | `10.10.90.0/24` | `10.10.90.1` |
+| 99 | IDRAC | `10.10.99.0/24` | `10.10.99.1` |
+
+**Important:** This table must match the switch plan and OPNsense plan exactly. If it drifts, the automation will produce inconsistent state across devices.
 
 ## Checklist
 
-- [ ] Define all managed hosts in `hosts.yml`.
-- [ ] Group hosts by function (proxmox, unraid, ai, media, firewall).
+- [ ] Define the switch in `hosts.yml` under a `switch` group.
+- [ ] Define the OPNsense firewall in `hosts.yml` under a `firewall` group.
+- [ ] Define Proxmox, Unraid, AI, and media hosts.
 - [ ] Populate `all.yml` with common values (DNS, NTP, timezone).
-- [ ] Populate each functional group var file.
-- [ ] Document which variables belong in group_vars vs host_vars.
+- [ ] Populate `switch.yml` with VLAN definitions and interface names.
+- [ ] Populate `firewall.yml` with VLAN interfaces and gateway addresses.
 - [ ] Verify inventory with `ansible-inventory --list`.
 
 ---
@@ -202,6 +238,18 @@ Keep all secrets encrypted at rest and out of GitHub.
 | `ansible.cfg` | References `ANSIBLE_VAULT_PASSWORD_FILE` |
 | `.gitignore` | Excludes Vault password and transient files |
 
+## Secrets Inventory
+
+| Secret | Used By |
+|---|---|
+| Switch enable password | `switch` role |
+| Switch admin username/password | `switch` role |
+| OPNsense API key | `firewall` role |
+| OPNsense API secret | `firewall` role |
+| Proxmox API token | `proxmox` role |
+| Docker registry credentials | `docker` role |
+| Ansible Vault password | (itself) |
+
 ## Checklist
 
 - [ ] Create `inventory/group_vars/all/vault.yml`.
@@ -214,11 +262,121 @@ Keep all secrets encrypted at rest and out of GitHub.
 
 ---
 
-# Task 6 — Roles
+# Task 6 — Switch Role
 
 ## Goal
 
-Implement each role with tasks, handlers, defaults, and templates.
+Configure the Cisco Catalyst switch from Ansible using the `cisco.ios`
+collection. This replaces the manual console work described in the
+switch plan, or serves as ongoing compliance enforcement.
+
+## Modules
+
+| Module | Purpose |
+|---|---|
+| `cisco.ios.ios_vlans` | Create and manage VLANs [citation:1] |
+| `cisco.ios.ios_l2_interfaces` | Configure access and trunk ports [citation:1] |
+| `cisco.ios.ios_interfaces` | Configure interface attributes [citation:1] |
+| `cisco.ios.ios_config` | Apply raw configuration sections [citation:1] |
+| `cisco.ios.ios_facts` | Gather switch facts [citation:1] |
+| `cisco.ios.ios_command` | Run show commands [citation:1] |
+
+## Connection
+
+The switch uses the `network_cli` connection type over SSH. Requires:
+
+- SSH enabled on the switch
+- A privilege 15 user account
+- `ansible_network_os: ios` set in inventory
+
+## Example Task
+
+```yaml
+- name: Configure VLANs
+  cisco.ios.ios_vlans:
+    config:
+      - vlan_id: 10
+        name: MGMT
+      - vlan_id: 20
+        name: SERVICES
+    state: merged
+```
+
+## Checklist
+
+- [ ] Create `roles/switch/tasks/main.yml`.
+- [ ] Configure VLANs via `ios_vlans`.
+- [ ] Configure access ports via `ios_l2_interfaces`.
+- [ ] Configure trunk ports and allowed VLANs.
+- [ ] Configure hostname and management IP.
+- [ ] Configure SSH and local users.
+- [ ] Test idempotency (second run produces no changes).
+- [ ] Test against a lab switch or snapshot before production.
+
+---
+
+# Task 7 — Firewall Role
+
+## Goal
+
+Configure OPNsense firewall rules, VLAN interfaces, and gateway
+addresses from Ansible using the `ansibleguy.opnsense` collection.
+This replaces manual WebGUI configuration.
+
+## Modules
+
+| Module | Purpose |
+|---|---|
+| `ansibleguy.opnsense.vlan` | Create VLAN interfaces [citation:5] |
+| `ansibleguy.opnsense.rule` | Create firewall rules [citation:5] |
+| `ansibleguy.opnsense.interface` | Configure interface IPs |
+| `ansibleguy.opnsense.reload` | Reload firewall config |
+
+## Connection
+
+OPNsense uses the REST API, not SSH. Requires:
+
+- An API key and secret pair from OPNsense
+- The API key stored in Ansible Vault
+- `connection: local` on the play (modules run on the controller)
+
+## Example Task
+
+```yaml
+- name: Create Management VLAN
+  ansibleguy.opnsense.vlan:
+    vlan_id: 10
+    interface: em0
+    description: "Management VLAN"
+    state: present
+
+- name: Allow MGMT to WAN
+  ansibleguy.opnsense.rule:
+    interface: vlan10
+    source: "vlan10 net"
+    destination: "any"
+    action: pass
+    description: "MGMT to WAN"
+    state: present
+```
+
+## Checklist
+
+- [ ] Create `roles/firewall/tasks/main.yml`.
+- [ ] Configure VLAN interfaces matching the VLAN Plan.
+- [ ] Configure gateway IPs on each VLAN.
+- [ ] Create baseline firewall rules (MGMT allow, GUEST block, TARPIT isolate).
+- [ ] Test idempotency.
+- [ ] Verify rules via WebGUI after playbook run.
+
+---
+
+# Task 8 — Server Roles
+
+## Goal
+
+Implement the non-network roles for Proxmox, Unraid, Docker, and
+services.
 
 ## Roles
 
@@ -230,9 +388,8 @@ Implement each role with tasks, handlers, defaults, and templates.
 | `unraid` | Unraid-specific configuration |
 | `monitoring` | Prometheus, Grafana, exporters |
 | `security` | Hardening, fail2ban, auditd |
-| `media` | Jellyfin, *arr stack, related services |
-| `ai` | AI workloads (Ollama, models, GPU config) |
-| `firewall` | OPNsense automation (if in scope) |
+| `media` | Jellyfin, *arr stack |
+| `ai` | AI workloads (Ollama, GPU config) |
 
 ## Checklist
 
@@ -244,12 +401,11 @@ Implement each role with tasks, handlers, defaults, and templates.
 - [ ] `roles/security/tasks/main.yml` implemented.
 - [ ] `roles/media/tasks/main.yml` implemented.
 - [ ] `roles/ai/tasks/main.yml` implemented.
-- [ ] Each role has a populated `README.md`.
-- [ ] Each role is idempotent (re-running produces no changes).
+- [ ] Each role is idempotent.
 
 ---
 
-# Task 7 — Playbooks
+# Task 9 — Playbooks
 
 ## Goal
 
@@ -258,40 +414,44 @@ clean baseline.
 
 ## Playbook Order
 
-| # | Playbook | Roles Used | Purpose |
+| # | Playbook | Target | Purpose |
 |---|---|---|---|
-| 01 | bootstrap | common | Initial access, users, SSH keys |
-| 02 | host-configuration | common | Timezone, hostname, sysctl, mounts |
-| 03 | network-validation | — | Verify VLAN, gateway, DNS reachability |
-| 04 | proxmox | proxmox, common | Proxmox VE configuration |
-| 05 | core-services | docker, monitoring | DNS, DHCP, reverse proxy, metrics |
-| 06 | security-monitoring | security, monitoring | Hardening and monitoring stack |
-| 07 | internal-applications | docker | Internal-only services |
-| 08 | public-services | docker | Public-facing services |
-| 09 | media | media, docker | Jellyfin and *arr stack |
-| 10 | ai | ai, docker | AI workloads |
-| 11 | game-servers | docker | Game servers |
-| 12 | validation | — | Final health checks and report |
+| 01 | bootstrap | servers | Initial users, SSH keys |
+| 02 | host-configuration | servers | Timezone, hostname, sysctl |
+| 03 | network-validation | servers | Verify VLAN, gateway, DNS reachability |
+| 04 | switch | switch | VLANs, interfaces, trunking, SSH |
+| 05 | firewall | firewall | VLAN interfaces, firewall rules |
+| 06 | proxmox | proxmox | Proxmox VE configuration |
+| 07 | core-services | services | DNS, DHCP, reverse proxy |
+| 08 | security-monitoring | all | Hardening and monitoring |
+| 09 | internal-applications | services | Internal-only services |
+| 10 | public-services | services | Public-facing services |
+| 11 | media | media | Jellyfin and *arr stack |
+| 12 | ai | ai | AI workloads |
+| 13 | game-servers | services | Game servers |
+| 14 | validation | all | Final health checks |
 
 ## Checklist
 
 - [ ] `01-bootstrap.yml` implemented.
 - [ ] `02-host-configuration.yml` implemented.
 - [ ] `03-network-validation.yml` implemented.
-- [ ] `04-proxmox.yml` implemented.
-- [ ] `05-core-services.yml` implemented.
-- [ ] `06-security-monitoring.yml` implemented.
-- [ ] `07-internal-applications.yml` implemented.
-- [ ] `08-public-services.yml` implemented.
-- [ ] `09-media.yml` implemented.
-- [ ] `10-ai.yml` implemented.
-- [ ] `11-game-servers.yml` implemented.
-- [ ] `12-validation.yml` implemented.
+- [ ] `04-switch.yml` implemented.
+- [ ] `05-firewall.yml` implemented.
+- [ ] `06-proxmox.yml` implemented.
+- [ ] `07-core-services.yml` implemented.
+- [ ] `08-security-monitoring.yml` implemented.
+- [ ] `09-internal-applications.yml` implemented.
+- [ ] `10-public-services.yml` implemented.
+- [ ] `11-media.yml` implemented.
+- [ ] `12-ai.yml` implemented.
+- [ ] `13-game-servers.yml` implemented.
+- [ ] `14-validation.yml` implemented.
 - [ ] `site.yml` imports all playbooks in order.
 
 ---
 
-# Task 8 — Validation and Idempotency
+# Task 10 — Validation and Idempotency
 
 ## Goal
 
@@ -300,17 +460,18 @@ run produces no changes.
 
 ## Procedure
 
-1. Provision a test host or snapshot a managed host.
+1. Snapshot the switch and OPNsense configs (or ensure backups exist).
 2. Run `ansible-playbook site.yml`.
 3. Record the first-run output.
 4. Run `ansible-playbook site.yml` again.
-5. Confirm the second run reports no changes to tasks that should be
-   idempotent.
+5. Confirm the second run reports no changes.
 
 ## Checklist
 
 - [ ] Full run completes without errors.
-- [ ] Second run is idempotent (no unexpected changes).
+- [ ] Second run is idempotent on switch tasks.
+- [ ] Second run is idempotent on firewall tasks.
+- [ ] Second run is idempotent on server tasks.
 - [ ] Validation playbook confirms service availability.
 - [ ] Network reachability confirmed from each VLAN.
 - [ ] Firewall rules verified from a representative client.
@@ -318,7 +479,7 @@ run produces no changes.
 
 ---
 
-# Task 9 — Documentation and GitHub
+# Task 11 — Documentation and GitHub
 
 ## Goal
 
@@ -328,7 +489,7 @@ Keep the repo clean, documented, and secure on GitHub.
 
 - [ ] `.gitignore` excludes Vault password, `.retry`, `.ansible/`, caches.
 - [ ] No secrets present in git history.
-- [ ] Commit history is readable (logical commits, clear messages).
+- [ ] Commit history is readable.
 - [ ] README reflects the current state of the repo.
 - [ ] Each role has a README.
 - [ ] Related plans (switch, OPNsense) linked from README.
@@ -343,7 +504,9 @@ Keep the repo clean, documented, and secure on GitHub.
 - [ ] Collections pinned in `requirements.yml`.
 - [ ] Inventory and group vars populated.
 - [ ] Vault and secrets configured.
-- [ ] All roles implemented and idempotent.
+- [ ] Switch role implemented and idempotent.
+- [ ] Firewall role implemented and idempotent.
+- [ ] Server roles implemented and idempotent.
 - [ ] All playbooks implemented.
 - [ ] `site.yml` runs the full sequence.
 - [ ] Full run succeeds from a clean baseline.
@@ -351,7 +514,8 @@ Keep the repo clean, documented, and secure on GitHub.
 - [ ] Validation passes.
 - [ ] Repo committed to GitHub with no secrets.
 
-**Implementation note:** Exact collection names, module names, and role
-variables depend on the Ansible version and target OS. Confirm those
-details against current collection documentation before applying
-changes to production hosts.
+**Implementation note:** Cisco IOS module syntax, OPNsense module
+parameters, and collection versions change over time. Confirm against
+current documentation before applying to production devices. The switch
+plan and OPNsense plan remain the authoritative source for the intended
+network design; this repo implements that design.
