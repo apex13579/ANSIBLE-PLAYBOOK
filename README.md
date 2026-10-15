@@ -71,18 +71,18 @@ lab/ansible/
 
 ## Build Progress
 
-| Area | Status |
-|---|---|
-| Repository skeleton | In progress |
-| README and documentation | In progress |
+| Area                         | Status      |
+|------------------------------|-------------|
+| Repository skeleton          | Done        |
+| README and documentation     | In progress |
 | Collections and requirements | Not started |
-| Inventory and group vars | Not started |
-| Vault and secrets | Not started |
-| Switch role | Not started |
-| Firewall role | Not started |
-| Server roles | Not started |
-| Playbooks | Not started |
-| Validation | Not started |
+| Inventory and group vars     | Not started |
+| Vault and secrets            | Not started |
+| Switch role                  | Not started |
+| Firewall role                | Not started |
+| Server roles                 | Not started |
+| Playbooks                    | Not started |
+| Validation                   | Not started |
 
 ---
 
