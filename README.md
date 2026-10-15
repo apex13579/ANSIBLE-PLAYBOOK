@@ -180,13 +180,13 @@ reproducible across machines and over time.
 
 ## Checklist
 
-- [ ] Create `requirements.yml`.
-- [ ] Pin `cisco.ios` to a known-good version.
-- [ ] Pin `ansibleguy.opnsense` to a known-good version.
-- [ ] Include `community.proxmox` for Proxmox automation.
-- [ ] Include `community.docker` for container management.
-- [ ] Configure `ansible.cfg` with `collections_path` and defaults.
-- [ ] Verify with `ansible-galaxy collection install -r requirements.yml`.
+- [X] Create `requirements.yml`.
+- [X] Pin `cisco.ios` to a known-good version.
+- [X] Pin `ansibleguy.opnsense` to a known-good version.
+- [X] Include `community.proxmox` for Proxmox automation.
+- [X] Include `community.docker` for container management.
+- [X] Configure `ansible.cfg` with `collections_path` and defaults.
+- [X] Verify with `ansible-galaxy collection install -r requirements.yml`.
 
 ---
 
