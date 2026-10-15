@@ -1,25 +1,7 @@
-```yaml
 ---
-# SweattLabs - Global Ansible Variables
-
-# Lab identity
-lab_name: SweattLabs
-lab_domain: sweatt.lab
-
-# Local time configuration
-lab_timezone: America/New_York
-
-# Ansible connection defaults
-ansible_connection: ssh
-ansible_python_interpreter: auto_silent
-
-# Common configuration
-lab_admin_user: Sweattlabs
-
-# Security defaults
-ansible_host_key_checking: true
-
-# Deployment settings
-lab_environment: homelab
-```
-
+host_timezone: "America/New_York"
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+dns_servers:
+  - 10.10.10.1
