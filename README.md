@@ -144,11 +144,11 @@ understood by anyone (including future-me) without reading every file.
 ## Checklist
 
 - [X] README describes scope and out-of-scope items.
-- [ ] README lists required Ansible and Python versions.
-- [ ] README documents how to run playbooks.
-- [ ] README documents where secrets live.
-- [ ] Each role has a README describing its purpose and variables.
-- [ ] Playbook order table matches the actual playbook files.
+- [X] README lists required Ansible and Python versions.
+- [X] README documents how to run playbooks.
+- [X] README documents where secrets live.
+- [X] Each role has a README describing its purpose and variables.
+- [X] Playbook order table matches the actual playbook files.
 
 ---
 
