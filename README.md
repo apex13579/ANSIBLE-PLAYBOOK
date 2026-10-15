@@ -33,7 +33,7 @@ lab/ansible/
 │   ├── hosts.yml
 │   └── group_vars/
 │       ├── all.yml
-│       ├── all/vault.yml
+│       ├── all.vault.yml
 │       ├── proxmox.yml
 │       ├── unraid.yml
 │       ├── ai.yml
