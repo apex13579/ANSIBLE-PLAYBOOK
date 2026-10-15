@@ -7,7 +7,11 @@ stored in GitHub. This includes the Cisco switch, the OPNsense firewall,
 Proxmox hosts, Unraid, service VMs, Docker workloads, monitoring, and
 supporting services. Everything that can be automated, should be.
 
-## Scope
+# SweattLabs — Homelab Automation
+
+Reproducible infrastructure-as-code management for the SweattLabs homelab, spanning network hardware, hypervisors, and containerized workloads.
+
+## Scope & Out-of-Scope
 
 | In scope (Ansible) | Out of scope (manual) |
 |---|---|
@@ -19,6 +23,18 @@ supporting services. Everything that can be automated, should be.
 | Monitoring stack | |
 | Internal and public services | |
 | Media, AI, and game server VMs | |
+
+## Requirements
+
+- **Ansible:** Core 2.15 or newer installed on the control node.
+- **Python:** 3.10 or newer on the control node and target hosts.
+- **Collections:** Pinned in `requirements.yml`.
+
+## How to Run Playbooks
+
+1. Install required collections:
+   ```bash
+   ansible-galaxy collection install -r requirements.yml
 
 ## Repository Layout
 
