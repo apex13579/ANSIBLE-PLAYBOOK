@@ -127,7 +127,7 @@ understood by anyone (including future-me) without reading every file.
 
 ## Checklist
 
-- [ ] README describes scope and out-of-scope items.
+- [X] README describes scope and out-of-scope items.
 - [ ] README lists required Ansible and Python versions.
 - [ ] README documents how to run playbooks.
 - [ ] README documents where secrets live.
