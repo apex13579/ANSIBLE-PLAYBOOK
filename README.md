@@ -230,13 +230,13 @@ Define which hosts Ansible manages and what variables apply to each group.
 
 ## Checklist
 
-- [ ] Define the switch in `hosts.yml` under a `switch` group.
-- [ ] Define the OPNsense firewall in `hosts.yml` under a `firewall` group.
-- [ ] Define Proxmox, Unraid, AI, and media hosts.
-- [ ] Populate `all.yml` with common values (DNS, NTP, timezone).
-- [ ] Populate `switch.yml` with VLAN definitions and interface names.
-- [ ] Populate `firewall.yml` with VLAN interfaces and gateway addresses.
-- [ ] Verify inventory with `ansible-inventory --list`.
+- [X] Define the switch in `hosts.yml` under a `switch` group.
+- [X] Define the OPNsense firewall in `hosts.yml` under a `firewall` group.
+- [X] Define Proxmox, Unraid, AI, and media hosts.
+- [X] Populate `all.yml` with common values (DNS, NTP, timezone).
+- [X] Populate `switch.yml` with VLAN definitions and interface names.
+- [X] Populate `firewall.yml` with VLAN interfaces and gateway addresses.
+- [X] Verify inventory with `ansible-inventory --list`.
 
 ---
 
