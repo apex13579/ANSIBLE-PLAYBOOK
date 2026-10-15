@@ -103,10 +103,10 @@ See the Repository Layout section above.
 - [x] Create `inventory/` with `hosts.yml` and `group_vars/`.
 - [x] Create `playbooks/` with numbered playbook files.
 - [x] Create `roles/` with initial role directories.
-- [ ] Add `.gitignore`.
-- [ ] Add `requirements.yml`.
-- [ ] Add `site.yml`.
-- [ ] Add `host_vars/` directory.
+- [X] Add `.gitignore`.
+- [X] Add `requirements.yml`.
+- [X] Add `site.yml`.
+- [X] Add `host_vars/` directory.
 
 ---
 
