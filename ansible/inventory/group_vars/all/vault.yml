@@ -1,0 +1,12 @@
+---
+ansible_user: "admin"
+ansible_ssh_pass: "changeme_ssh_password"
+
+# Network & API Secrets
+switch_enable_password: "changeme_enable_pass"
+switch_admin_password: "changeme_switch_pass"
+opnsense_api_key: "your_opnsense_api_key"
+opnsense_api_secret: "your_opnsense_api_secret"
+proxmox_api_token_id: "ansible@pve!vault_token"
+proxmox_api_token_secret: "your_proxmox_token_secret"
+docker_registry_password: "your_docker_registry_pass"
