@@ -1,1 +1,24 @@
-
+---
+vlans:
+  - id: 10
+    name: MGMT
+  - id: 15
+    name: IOT
+  - id: 20
+    name: SERVICES
+  - id: 25
+    name: STORAGE
+  - id: 30
+    name: SECURITY
+  - id: 35
+    name: AI
+  - id: 40
+    name: MEDIA
+  - id: 45
+    name: GUEST
+  - id: 50
+    name: PUBLIC
+  - id: 90
+    name: TARPIT
+  - id: 99
+    name: IDRAC
